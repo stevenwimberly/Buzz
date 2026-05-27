@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buzz — UT Campus Crowd Levels</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bo: #BF5700;
+      --bo-light: #D97706;
+      --bo-dark: #8B3F00;
+      --bo-deeper: #4A2300;
+      --cream: #FFFBF5;
+      --cream-tint: #FAF5EB;
+      --warm-border: #E7E0D3;
+      --text: #1C1917;
+      --text-secondary: #57534E;
+      --text-tertiary: #A8A29E;
+      --empty: #16A34A;
+      --moderate: #EAB308;
+      --busy: #F97316;
+      --full: #DC2626;
+      --shadow-sm: 0 1px 3px rgba(74, 35, 0, 0.08);
+      --shadow-md: 0 4px 14px rgba(74, 35, 0, 0.1);
+      --shadow-lg: 0 24px 48px rgba(74, 35, 0, 0.14);
+      --shadow-bo: 0 8px 20px rgba(191, 87, 0, 0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--cream-tint); color: var(--text); -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 1100px; margin: 0 auto; background: var(--cream); min-height: 100vh; box-shadow: var(--shadow-lg); }
+
+    header {
+      background: linear-gradient(135deg, var(--bo) 0%, var(--bo-dark) 100%);
+      color: white; padding: 24px 28px;
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    header::before {
+      content: ''; position: absolute; top: -60%; right: -10%;
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    header::after {
+      content: ''; position: absolute; bottom: -50%; left: -10%;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(255, 220, 180, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .brand-row { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
+    .logo {
+      width: 52px; height: 52px;
+      background: white;
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .logo svg { width: 36px; height: 26px; color: var(--bo); }
+    .brand h1 { font-size: 32px; font-weight: 900; letter-spacing: -1.8px; line-height: 1; }
+    .brand .subtitle { color: rgba(255, 240, 220, 0.9); font-size: 13px; font-weight: 500; margin-top: 4px; letter-spacing: 0.1px; }
+    .live-badge {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+      padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25);
+      position: relative; z-index: 1;
+    }
+    .live-dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,0.35); animation: pulse 2s infinite; }
+    .live-text { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: white; }
+    @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+
+    .time-strip {
+      background: linear-gradient(to right, var(--cream-tint), #FAEBD0);
+      color: var(--bo-dark); text-align: center; padding: 13px 16px;
+      font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--warm-border); letter-spacing: 0.3px;
+    }
+
+    .filters { padding: 16px 22px; display: flex; gap: 8px; background: white; border-bottom: 1px solid var(--warm-border); overflow-x: auto; align-items: center; flex-wrap: wrap; }
+    .filter-pill {
+      padding: 9px 18px; border-radius: 999px; font-family: inherit;
+      font-size: 13px; font-weight: 600; background: var(--cream-tint); color: var(--text-secondary);
+      border: 1.5px solid transparent; cursor: pointer; transition: all 0.18s; white-space: nowrap;
+    }
+    .filter-pill:hover { background: #F5EBD9; color: var(--text); }
+    .filter-pill.active {
+      background: var(--bo); color: white; border-color: var(--bo);
+      box-shadow: var(--shadow-bo);
+    }
+
+    .map-wrap { position: relative; }
+    #map { height: 60vh; min-height: 480px; width: 100%; }
+
+    .map-pin-wrap { position: relative; cursor: pointer; transition: transform 0.2s ease; }
+    .map-pin-wrap:hover { transform: scale(1.12) translateY(-3px); z-index: 1000; }
+    .map-pin {
+      padding: 8px 12px 9px; border-radius: 11px; border: 2.5px solid white;
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 800;
+      text-align: center; white-space: nowrap; line-height: 1.18; letter-spacing: -0.2px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.32), 0 1px 3px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.3);
+      min-width: 66px;
+      position: relative;
+    }
+    .map-pin::before {
+      content: ''; position: absolute;
+      left: 50%; bottom: -7px;
+      width: 12px; height: 12px;
+      background: inherit;
+      border-right: 2.5px solid white; border-bottom: 2.5px solid white;
+      transform: translateX(-50%) rotate(45deg);
+      box-shadow: 3px 3px 6px rgba(0,0,0,0.15);
+    }
+    .map-pin .name-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .map-pin .pin-icon { width: 12px; height: 12px; opacity: 0.85; }
+    .map-pin .pct { display: block; font-size: 11px; font-weight: 600; margin-top: 2px; opacity: 0.92; }
+
+    .legend { background: white; padding: 16px 24px; display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid var(--warm-border); }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+    .legend-swatch { width: 14px; height: 14px; border-radius: 4px; box-shadow: var(--shadow-sm); }
+
+    .groups-section { padding: 28px 24px; background: var(--cream-tint); }
+    .groups-section h2 {
+      font-size: 24px; font-weight: 900; letter-spacing: -0.8px; color: var(--text);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .groups-section h2::before {
+      content: ''; width: 4px; height: 24px; background: var(--bo); border-radius: 2px;
+    }
+    .section-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 6px; margin-bottom: 20px; padding-left: 14px; }
+
+    .group {
+      background: white; border-radius: 16px; margin-bottom: 12px; overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--warm-border);
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .group:hover { box-shadow: var(--shadow-md); }
+    .group-header { padding: 18px 22px; display: flex; align-items: center; gap: 14px; cursor: pointer; user-select: none; transition: background 0.15s; }
+    .group-header:hover { background: var(--cream-tint); }
+    .group-dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 4px rgba(0,0,0,0.04); flex-shrink: 0; }
+    .group-title-area { flex: 1; }
+    .group-title { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+    .group-count { font-size: 12px; color: var(--text-secondary); margin-top: 3px; font-weight: 500; }
+    .group-chevron { width: 20px; height: 20px; color: var(--text-tertiary); transition: transform 0.25s; }
+    .group.open .group-chevron { transform: rotate(180deg); }
+    .group-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out; }
+    .group.open .group-body { max-height: 800px; }
+
+    .building { display: flex; align-items: center; gap: 14px; padding: 14px 22px; cursor: pointer; transition: background 0.15s, padding-left 0.15s; border-top: 1px solid var(--warm-border); }
+    .building:hover { background: var(--cream-tint); padding-left: 26px; }
+    .building-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .building-icon svg { width: 20px; height: 20px; }
+    .building-info { flex: 1; }
+    .building-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
+    .building-type { font-size: 12px; color: var(--text-secondary); text-transform: capitalize; margin-top: 2px; font-weight: 500; }
+    .building-percent { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+
+    footer { padding: 22px 24px; text-align: center; color: var(--text-tertiary); font-size: 12px; background: white; border-top: 1px solid var(--warm-border); }
+    footer .bo-accent { color: var(--bo); font-weight: 700; }
+
+    .leaflet-popup-content { font-family: 'Inter', sans-serif !important; margin: 12px 16px; font-size: 13px; }
+    .leaflet-popup-content b { color: var(--text); font-weight: 700; }
+    .leaflet-popup-content-wrapper { border-radius: 12px !important; box-shadow: 0 12px 30px rgba(0,0,0,0.18) !important; }
+    .leaflet-marker-draggable { cursor: pointer !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand-row">
+        <div class="logo">
+          <!-- UT longhorn silhouette -->
+          <svg viewBox="0 0 100 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <!-- Left horn: sweeps from center outward and slightly up -->
+            <path d="M 50 28
+                     C 42 28, 32 25, 22 21
+                     C 14 18, 6 17, 2 21
+                     C 5 19, 11 19, 18 21
+                     C 28 23, 38 26, 46 28
+                     C 48 28.5, 49.5 28.5, 50 28 Z" />
+            <!-- Right horn (mirror) -->
+            <path d="M 50 28
+                     C 58 28, 68 25, 78 21
+                     C 86 18, 94 17, 98 21
+                     C 95 19, 89 19, 82 21
+                     C 72 23, 62 26, 54 28
+                     C 52 28.5, 50.5 28.5, 50 28 Z" />
+            <!-- Head/snout (downward teardrop) -->
+            <path d="M 42 28
+                     L 42 46
+                     C 42 54, 46 58, 50 58
+                     C 54 58, 58 54, 58 46
+                     L 58 28
+                     C 58 28, 54 30, 50 30
+                     C 46 30, 42 28, 42 28 Z" />
+            <!-- Small nostril detail -->
+            <ellipse cx="46" cy="50" rx="1.2" ry="1.6" fill="white" opacity="0.7"/>
+            <ellipse cx="54" cy="50" rx="1.2" ry="1.6" fill="white" opacity="0.7"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Buzz</h1>
+          <div class="subtitle">Live UT campus crowd levels</div>
+        </div>
+      </div>
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        <div class="live-text">LIVE</div>
+      </div>
+    </header>
+
+    <div class="time-strip">Thursday · 6:00 PM · finals week</div>
+
+    <div class="filters">
+      <button class="filter-pill active" data-filter="all">All spaces</button>
+      <button class="filter-pill" data-filter="study">Study</button>
+      <button class="filter-pill" data-filter="dining">Dining</button>
+      <button class="filter-pill" data-filter="gym">Gyms</button>
+    </div>
+
+    <div class="map-wrap">
+      <div id="map"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background: var(--empty)"></div>Empty (under 30%)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background: var(--moderate)"></div>Moderate (30–60%)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background: var(--busy)"></div>Busy (60–85%)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background: var(--full)"></div>Full (over 85%)</div>
+    </div>
+
+    <div class="groups-section">
+      <h2>Browse by availability</h2>
+      <div class="section-subtitle">Tap any group to expand or collapse</div>
+      <div id="groups-container"></div>
+    </div>
+
+    <footer>Built by <span class="bo-accent">Steven Wimberly</span> · Demo data · Map © OpenStreetMap</footer>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const ICONS = {
+      study:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+      dining: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
+      gym:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>'
+    };
+    const PIN_ICONS = {
+      study:  '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+      dining: '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
+      gym:    '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>'
+    };
+
+    const buildings = [
+      { id: 'pcl',     name: 'PCL',       fullName: 'PCL (Main Library)',         type: 'study',  lat: 30.2828, lng: -97.7384, percentFull: 95 },
+      { id: 'eer',     name: 'EER',       fullName: 'Engineering Library',         type: 'study',  lat: 30.2884, lng: -97.7354, percentFull: 92 },
+      { id: 'welch',   name: 'Welch',     fullName: 'Welch Hall',                  type: 'study',  lat: 30.2863, lng: -97.7376, percentFull: 88 },
+      { id: 'sac',     name: 'SAC',       fullName: 'Student Activity Center',     type: 'study',  lat: 30.2849, lng: -97.7367, percentFull: 35 },
+      { id: 'mccombs', name: 'McCombs',   fullName: 'McCombs School of Business',  type: 'study',  lat: 30.2842, lng: -97.7381, percentFull: 55 },
+      { id: 'j2',      name: 'J2',        fullName: 'J2 Dining',                   type: 'dining', lat: 30.2827, lng: -97.7368, percentFull: 90 },
+      { id: 'jcl',     name: 'JCL',       fullName: 'JCL Dining',                  type: 'dining', lat: 30.2831, lng: -97.7368, percentFull: 25 },
+      { id: 'kins',    name: 'Kinsolving',fullName: 'Kinsolving Dining',           type: 'dining', lat: 30.2902, lng: -97.7397, percentFull: 50 },
+      { id: 'gregory', name: 'Gregory',   fullName: 'Gregory Gymnasium',           type: 'gym',    lat: 30.2840, lng: -97.7364, percentFull: 97 }
+    ];
+
+    const colors = { empty: '#16A34A', moderate: '#EAB308', busy: '#F97316', full: '#DC2626' };
+    function crowdLevel(p) {
+      if (p < 30) return 'empty';
+      if (p < 60) return 'moderate';
+      if (p < 85) return 'busy';
+      return 'full';
+    }
+    function crowdColor(p) { return colors[crowdLevel(p)]; }
+    function textColor(p) { return p >= 60 ? '#ffffff' : '#1C1917'; }
+
+    const map = L.map('map', { zoomControl: false }).setView([30.2862, -97.7378], 16);
+    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
+
+    const markersById = {};
+    buildings.forEach(b => {
+      const bg = crowdColor(b.percentFull);
+      const fg = textColor(b.percentFull);
+      const pinIcon = PIN_ICONS[b.type] || '';
+      const html =
+        '<div class="map-pin-wrap">' +
+          '<div class="map-pin" style="background:' + bg + '; color:' + fg + '">' +
+            '<div class="name-row">' + pinIcon + '<span>' + b.name + '</span></div>' +
+            '<span class="pct">' + b.percentFull + '%</span>' +
+          '</div>' +
+        '</div>';
+      const icon = L.divIcon({ className: '', html: html, iconSize: [82, 60], iconAnchor: [41, 56] });
+      const marker = L.marker([b.lat, b.lng], { icon: icon }).addTo(map);
+      marker.bindPopup('<b>' + b.fullName + '</b><br>' + b.percentFull + '% full');
+      markersById[b.id] = marker;
+    });
+
+    const groupsContainer = document.getElementById('groups-container');
+    const levels = [
+      { key: 'empty',    title: 'Empty',    subtitle: 'plenty of room',     openByDefault: true },
+      { key: 'moderate', title: 'Moderate', subtitle: 'some availability',  openByDefault: true },
+      { key: 'busy',     title: 'Busy',     subtitle: 'getting crowded',    openByDefault: false },
+      { key: 'full',     title: 'Full',     subtitle: 'try somewhere else', openByDefault: false }
+    ];
+    let activeFilter = 'all';
+
+    function renderGroups() {
+      groupsContainer.innerHTML = '';
+      levels.forEach(level => {
+        const inGroup = buildings.filter(b =>
+          crowdLevel(b.percentFull) === level.key &&
+          (activeFilter === 'all' || b.type === activeFilter)
+        );
+        if (inGroup.length === 0) return;
+        const color = colors[level.key];
+        const group = document.createElement('div');
+        group.className = 'group' + (level.openByDefault ? ' open' : '');
+        const buildingHtml = inGroup.map(b => {
+          const iconSvg = ICONS[b.type] || '';
+          return '<div class="building" data-id="' + b.id + '">' +
+            '<div class="building-icon" style="background:' + color + '">' + iconSvg + '</div>' +
+            '<div class="building-info">' +
+              '<div class="building-name">' + b.fullName + '</div>' +
+              '<div class="building-type">' + b.type + '</div>' +
+            '</div>' +
+            '<div class="building-percent" style="color:' + color + '">' + b.percentFull + '%</div>' +
+          '</div>';
+        }).join('');
+        group.innerHTML =
+          '<div class="group-header">' +
+            '<div class="group-dot" style="background:' + color + '"></div>' +
+            '<div class="group-title-area">' +
+              '<div class="group-title">' + level.title + '</div>' +
+              '<div class="group-count">' + inGroup.length + ' ' + (inGroup.length === 1 ? 'space' : 'spaces') + ' · ' + level.subtitle + '</div>' +
+            '</div>' +
+            '<svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
+          '</div>' +
+          '<div class="group-body">' + buildingHtml + '</div>';
+        group.querySelector('.group-header').addEventListener('click', () => group.classList.toggle('open'));
+        group.querySelectorAll('.building').forEach(el => {
+          el.addEventListener('click', () => {
+            const id = el.getAttribute('data-id');
+            const b = buildings.find(x => x.id === id);
+            map.setView([b.lat, b.lng], 18, { animate: true });
+            markersById[id].openPopup();
+            document.querySelector('.map-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        });
+        groupsContainer.appendChild(group);
+      });
+    }
+
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeFilter = pill.getAttribute('data-filter');
+        renderGroups();
+        buildings.forEach(b => {
+          const show = activeFilter === 'all' || b.type === activeFilter;
+          if (show) {
+            if (!map.hasLayer(markersById[b.id])) markersById[b.id].addTo(map);
+          } else {
+            if (map.hasLayer(markersById[b.id])) map.removeLayer(markersById[b.id]);
+          }
+        });
+      });
+    });
+
+    renderGroups();
+  </script>
+</body>
+</html>
