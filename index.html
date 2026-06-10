@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Buzz — UT Campus Crowd Levels</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,19 +28,33 @@
       --shadow-md: 0 4px 14px rgba(74, 35, 0, 0.1);
       --shadow-lg: 0 24px 48px rgba(74, 35, 0, 0.14);
       --shadow-bo: 0 8px 20px rgba(191, 87, 0, 0.25);
+      --tab-bar-h: 68px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--cream-tint); color: var(--text); -webkit-font-smoothing: antialiased;
+      height: 100%; overflow: hidden;
     }
-    .container { max-width: 1100px; margin: 0 auto; background: var(--cream); min-height: 100vh; box-shadow: var(--shadow-lg); }
+    body { display: flex; flex-direction: column; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
+    .app {
+      max-width: 1100px; width: 100%; margin: 0 auto;
+      background: var(--cream); height: 100vh;
+      display: flex; flex-direction: column;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ===== HEADER ===== */
     header {
       background: linear-gradient(135deg, var(--bo) 0%, var(--bo-dark) 100%);
-      color: white; padding: 24px 28px;
+      color: white; padding: 18px 22px;
       display: flex; justify-content: space-between; align-items: center;
       position: relative; overflow: hidden;
+      flex-shrink: 0;
     }
     header::before {
       content: ''; position: absolute; top: -60%; right: -10%;
@@ -48,43 +62,60 @@
       background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 60%);
       pointer-events: none;
     }
-    header::after {
-      content: ''; position: absolute; bottom: -50%; left: -10%;
-      width: 280px; height: 280px;
-      background: radial-gradient(circle, rgba(255, 220, 180, 0.1) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .brand-row { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
+    .brand-row { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
     .logo {
-      width: 52px; height: 52px;
+      width: 44px; height: 44px;
       background: white;
-      border-radius: 14px; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
     }
-    .logo svg { width: 36px; height: 26px; color: var(--bo); }
-    .brand h1 { font-size: 32px; font-weight: 900; letter-spacing: -1.8px; line-height: 1; }
-    .brand .subtitle { color: rgba(255, 240, 220, 0.9); font-size: 13px; font-weight: 500; margin-top: 4px; letter-spacing: 0.1px; }
+    .logo svg { width: 32px; height: 22px; color: var(--bo); }
+    .brand h1 { font-size: 26px; font-weight: 900; letter-spacing: -1.5px; line-height: 1; }
+    .brand .subtitle { color: rgba(255, 240, 220, 0.9); font-size: 12px; font-weight: 500; margin-top: 3px; }
     .live-badge {
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: center; gap: 7px;
       background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
-      padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25);
+      padding: 8px 13px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25);
       position: relative; z-index: 1;
     }
-    .live-dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,0.35); animation: pulse 2s infinite; }
-    .live-text { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: white; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,0.35); animation: pulse 2s infinite; }
+    .live-text { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: white; }
     @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
 
+    /* ===== VIEW CONTAINER ===== */
+    .view-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .view {
+      position: absolute; inset: 0;
+      display: none;
+      flex-direction: column;
+      background: var(--cream);
+    }
+    .view.active { display: flex; }
+
+    /* ===== MAP VIEW ===== */
     .time-strip {
       background: linear-gradient(to right, var(--cream-tint), #FAEBD0);
-      color: var(--bo-dark); text-align: center; padding: 13px 16px;
-      font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--warm-border); letter-spacing: 0.3px;
+      color: var(--bo-dark); text-align: center; padding: 10px 16px;
+      font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--warm-border); letter-spacing: 0.3px;
+      flex-shrink: 0;
     }
-
-    .filters { padding: 16px 22px; display: flex; gap: 8px; background: white; border-bottom: 1px solid var(--warm-border); overflow-x: auto; align-items: center; flex-wrap: wrap; }
+    .filters {
+      padding: 12px 16px; display: flex; gap: 8px;
+      background: white; border-bottom: 1px solid var(--warm-border);
+      overflow-x: auto; flex-shrink: 0;
+      scrollbar-width: none;
+    }
+    .filters::-webkit-scrollbar { display: none; }
     .filter-pill {
-      padding: 9px 18px; border-radius: 999px; font-family: inherit;
-      font-size: 13px; font-weight: 600; background: var(--cream-tint); color: var(--text-secondary);
-      border: 1.5px solid transparent; cursor: pointer; transition: all 0.18s; white-space: nowrap;
+      padding: 8px 16px; border-radius: 999px;
+      font-size: 13px; font-weight: 600;
+      background: var(--cream-tint); color: var(--text-secondary);
+      border: 1.5px solid transparent;
+      transition: all 0.18s; white-space: nowrap;
     }
     .filter-pill:hover { background: #F5EBD9; color: var(--text); }
     .filter-pill.active {
@@ -92,17 +123,101 @@
       box-shadow: var(--shadow-bo);
     }
 
-    .map-wrap { position: relative; }
-    #map { height: 60vh; min-height: 480px; width: 100%; }
+    .map-and-sheet {
+      flex: 1; position: relative; overflow: hidden;
+    }
+    #map { position: absolute; inset: 0; }
 
+    /* ===== BOTTOM SHEET ===== */
+    .sheet {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.12);
+      transition: transform 0.32s cubic-bezier(.32,.72,0,1);
+      z-index: 500;
+      max-height: 75%;
+      display: flex; flex-direction: column;
+    }
+    .sheet.collapsed { transform: translateY(calc(100% - 110px)); }
+    .sheet.expanded { transform: translateY(0); }
+    .sheet-handle-area {
+      padding: 8px 0 6px;
+      cursor: pointer;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .sheet-handle {
+      width: 38px; height: 4px;
+      background: #D6D3D1;
+      border-radius: 999px;
+      margin: 0 auto;
+    }
+    .sheet-header {
+      padding: 6px 20px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none;
+      border-bottom: 1px solid var(--warm-border);
+      flex-shrink: 0;
+    }
+    .sheet-title { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+    .sheet-count { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+    .sheet-body {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ===== LEGEND (in sheet) ===== */
+    .mini-legend {
+      display: flex; gap: 14px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--warm-border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .mini-legend::-webkit-scrollbar { display: none; }
+    .mini-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
+    .mini-legend-swatch { width: 10px; height: 10px; border-radius: 3px; }
+
+    /* ===== BUILDING LIST CARDS ===== */
+    .building-list { padding: 6px 12px 0; }
+    .building-card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 12px;
+      border-radius: 12px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .building-card:hover { background: var(--cream-tint); }
+    .building-card:active { background: #F5EBD9; }
+    .building-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+    .building-icon svg { width: 20px; height: 20px; }
+    .building-info { flex: 1; min-width: 0; }
+    .building-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
+    .building-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .building-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-tertiary); }
+    .building-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .building-percent { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; }
+    .building-status { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ===== MAP PIN ===== */
     .map-pin-wrap { position: relative; cursor: pointer; transition: transform 0.2s ease; }
     .map-pin-wrap:hover { transform: scale(1.12) translateY(-3px); z-index: 1000; }
     .map-pin {
-      padding: 8px 12px 9px; border-radius: 11px; border: 2.5px solid white;
-      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 800;
-      text-align: center; white-space: nowrap; line-height: 1.18; letter-spacing: -0.2px;
+      padding: 7px 11px 8px; border-radius: 10px; border: 2.5px solid white;
+      font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 800;
+      text-align: center; white-space: nowrap; line-height: 1.15; letter-spacing: -0.2px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.32), 0 1px 3px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.3);
-      min-width: 66px;
+      min-width: 60px;
       position: relative;
     }
     .map-pin::before {
@@ -112,97 +227,384 @@
       background: inherit;
       border-right: 2.5px solid white; border-bottom: 2.5px solid white;
       transform: translateX(-50%) rotate(45deg);
-      box-shadow: 3px 3px 6px rgba(0,0,0,0.15);
     }
     .map-pin .name-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .map-pin .pin-icon { width: 12px; height: 12px; opacity: 0.85; }
-    .map-pin .pct { display: block; font-size: 11px; font-weight: 600; margin-top: 2px; opacity: 0.92; }
+    .map-pin .pin-icon { width: 11px; height: 11px; opacity: 0.85; }
+    .map-pin .pct { display: block; font-size: 10px; font-weight: 600; margin-top: 1px; opacity: 0.92; }
 
-    .legend { background: white; padding: 16px 24px; display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid var(--warm-border); }
-    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--text-secondary); }
-    .legend-swatch { width: 14px; height: 14px; border-radius: 4px; box-shadow: var(--shadow-sm); }
-
-    .groups-section { padding: 28px 24px; background: var(--cream-tint); }
-    .groups-section h2 {
-      font-size: 24px; font-weight: 900; letter-spacing: -0.8px; color: var(--text);
-      display: flex; align-items: center; gap: 10px;
+    /* ===== SEARCH VIEW ===== */
+    .search-bar-wrap {
+      padding: 14px 16px; background: white;
+      border-bottom: 1px solid var(--warm-border);
+      flex-shrink: 0;
     }
-    .groups-section h2::before {
-      content: ''; width: 4px; height: 24px; background: var(--bo); border-radius: 2px;
+    .search-input-wrap {
+      position: relative;
+      display: flex; align-items: center;
+      background: var(--cream-tint);
+      border-radius: 14px;
+      padding: 0 14px;
+      transition: box-shadow 0.18s, background 0.18s;
     }
-    .section-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 6px; margin-bottom: 20px; padding-left: 14px; }
+    .search-input-wrap:focus-within {
+      background: white;
+      box-shadow: 0 0 0 3px rgba(191, 87, 0, 0.15), 0 0 0 1.5px var(--bo);
+    }
+    .search-icon { width: 18px; height: 18px; color: var(--text-tertiary); flex-shrink: 0; }
+    .search-input {
+      flex: 1; border: none; outline: none; background: transparent;
+      padding: 13px 10px;
+      font-size: 15px; font-family: inherit; color: var(--text);
+    }
+    .search-input::placeholder { color: var(--text-tertiary); }
+    .search-clear {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--text-tertiary); color: white;
+      display: none; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .search-clear.visible { display: flex; }
+    .search-clear svg { width: 12px; height: 12px; }
 
-    .group {
-      background: white; border-radius: 16px; margin-bottom: 12px; overflow: hidden;
-      box-shadow: var(--shadow-sm);
+    .search-results { flex: 1; overflow-y: auto; padding: 6px 12px 12px; -webkit-overflow-scrolling: touch; }
+    .search-section-label {
+      padding: 12px 8px 6px;
+      font-size: 11px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-tertiary);
+    }
+    .empty-state {
+      padding: 60px 20px; text-align: center; color: var(--text-secondary);
+    }
+    .empty-state-icon { width: 48px; height: 48px; margin: 0 auto 14px; color: var(--text-tertiary); }
+    .empty-state-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .empty-state-text { font-size: 13px; line-height: 1.5; }
+
+    /* ===== SAVED & PROFILE VIEW (placeholders for Build 2) ===== */
+    .placeholder-view {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 30px; text-align: center;
+    }
+    .placeholder-view .empty-state-icon { width: 56px; height: 56px; color: var(--bo); opacity: 0.5; }
+    .placeholder-view h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .placeholder-view p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; max-width: 280px; }
+
+    /* ===== TAB BAR ===== */
+    .tab-bar {
+      flex-shrink: 0;
+      height: var(--tab-bar-h);
+      background: white;
+      border-top: 1px solid var(--warm-border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .tab-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px;
+      color: var(--text-tertiary);
+      transition: color 0.15s;
+      padding: 8px 4px;
+    }
+    .tab-btn svg { width: 22px; height: 22px; }
+    .tab-btn .tab-label { font-size: 10px; font-weight: 700; letter-spacing: 0.2px; }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active { color: var(--bo); }
+
+    /* ===== BUILDING DETAIL MODAL ===== */
+    .modal-overlay {
+      position: absolute; inset: 0;
+      background: rgba(28, 25, 23, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.show { display: block; opacity: 1; }
+    .detail-modal {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: var(--cream);
+      border-radius: 24px 24px 0 0;
+      max-height: 92%;
+      z-index: 1001;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(.32,.72,0,1);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .detail-modal.show { transform: translateY(0); }
+    .detail-hero {
+      position: relative;
+      height: 200px;
+      display: flex; align-items: flex-end;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .detail-hero-bg {
+      position: absolute; inset: 0;
+    }
+    .detail-hero-icon {
+      position: absolute;
+      right: -10px; top: -20px;
+      width: 220px; height: 220px;
+      opacity: 0.18;
+      color: white;
+    }
+    .detail-close {
+      position: absolute;
+      top: 14px; left: 14px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.92);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+      z-index: 2;
+    }
+    .detail-close svg { width: 18px; height: 18px; color: var(--text); }
+    .detail-hero-content {
+      position: relative; z-index: 1;
+      padding: 18px 22px;
+      color: white;
+      width: 100%;
+    }
+    .detail-type-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px;
+      background: rgba(255,255,255,0.22);
+      backdrop-filter: blur(8px);
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .detail-type-pill svg { width: 12px; height: 12px; }
+    .detail-name { font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1.05; }
+
+    .detail-body { flex: 1; overflow-y: auto; padding: 20px 22px 26px; -webkit-overflow-scrolling: touch; }
+
+    .status-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px;
+      padding: 14px 16px;
+      background: white;
+      border-radius: 14px;
       border: 1px solid var(--warm-border);
-      transition: box-shadow 0.2s, transform 0.15s;
+      margin-bottom: 14px;
     }
-    .group:hover { box-shadow: var(--shadow-md); }
-    .group-header { padding: 18px 22px; display: flex; align-items: center; gap: 14px; cursor: pointer; user-select: none; transition: background 0.15s; }
-    .group-header:hover { background: var(--cream-tint); }
-    .group-dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 4px rgba(0,0,0,0.04); flex-shrink: 0; }
-    .group-title-area { flex: 1; }
-    .group-title { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
-    .group-count { font-size: 12px; color: var(--text-secondary); margin-top: 3px; font-weight: 500; }
-    .group-chevron { width: 20px; height: 20px; color: var(--text-tertiary); transition: transform 0.25s; }
-    .group.open .group-chevron { transform: rotate(180deg); }
-    .group-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out; }
-    .group.open .group-body { max-height: 800px; }
+    .status-bar-area { flex: 1; }
+    .status-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 6px; }
+    .status-bar-bg { width: 100%; height: 8px; background: var(--cream-tint); border-radius: 999px; overflow: hidden; }
+    .status-bar-fill { height: 100%; border-radius: 999px; transition: width 0.4s; }
+    .status-percent { font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+    .status-percent-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
 
-    .building { display: flex; align-items: center; gap: 14px; padding: 14px 22px; cursor: pointer; transition: background 0.15s, padding-left 0.15s; border-top: 1px solid var(--warm-border); }
-    .building:hover { background: var(--cream-tint); padding-left: 26px; }
-    .building-icon {
-      width: 42px; height: 42px; border-radius: 12px;
+    .quick-facts {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px; margin-bottom: 18px;
+    }
+    .quick-fact {
+      background: white; border: 1px solid var(--warm-border);
+      border-radius: 12px; padding: 11px 12px;
+      text-align: center;
+    }
+    .quick-fact-icon { width: 18px; height: 18px; color: var(--bo); margin: 0 auto 5px; display: block; }
+    .quick-fact-value { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.2px; }
+    .quick-fact-label { font-size: 10px; color: var(--text-secondary); font-weight: 600; margin-top: 1px; }
+
+    .section-h {
+      font-size: 13px; font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.1px;
+      margin: 18px 0 10px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .section-h .h-meta { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+
+    /* HOURLY CHART */
+    .hourly-chart {
+      background: white;
+      border: 1px solid var(--warm-border);
+      border-radius: 14px;
+      padding: 14px 12px 8px;
+    }
+    .hourly-bars {
+      display: flex; align-items: flex-end;
+      gap: 3px; height: 80px;
+      padding: 0 4px;
+    }
+    .hourly-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      position: relative;
+      min-height: 4px;
+      transition: opacity 0.2s;
+    }
+    .hourly-bar.now {
+      box-shadow: 0 0 0 2px white, 0 0 0 4px var(--bo);
+      z-index: 2;
+    }
+    .hourly-bar.now::after {
+      content: 'NOW';
+      position: absolute;
+      top: -16px; left: 50%; transform: translateX(-50%);
+      font-size: 8px; font-weight: 900;
+      color: var(--bo);
+      letter-spacing: 0.5px;
+    }
+    .hourly-labels {
+      display: flex; padding: 8px 4px 0;
+      font-size: 9px; color: var(--text-tertiary);
+      font-weight: 600;
+      justify-content: space-between;
+    }
+
+    /* WEEKLY HEATMAP */
+    .heatmap {
+      background: white;
+      border: 1px solid var(--warm-border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .heatmap-row {
+      display: grid;
+      grid-template-columns: 28px repeat(24, 1fr);
+      gap: 2px;
+      margin-bottom: 2px;
+    }
+    .heatmap-row:last-child { margin-bottom: 0; }
+    .heatmap-day-label {
+      font-size: 9px; font-weight: 700; color: var(--text-tertiary);
+      display: flex; align-items: center; padding-right: 6px;
+      letter-spacing: 0.3px;
+    }
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      max-height: 14px;
+    }
+    .heatmap-hour-row {
+      display: grid;
+      grid-template-columns: 28px repeat(24, 1fr);
+      gap: 2px;
+      margin-top: 6px;
+      font-size: 9px;
+      color: var(--text-tertiary);
+      font-weight: 600;
+    }
+    .heatmap-hour-row span:first-child { padding-right: 6px; }
+    .heatmap-hour-label {
+      text-align: center;
+      grid-column: span 6;
+    }
+
+    /* ALTERNATIVES */
+    .alternatives {
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .alt-card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 12px;
+      background: white;
+      border: 1px solid var(--warm-border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .alt-card:hover { background: var(--cream-tint); }
+    .alt-icon {
+      width: 32px; height: 32px; border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
       color: white; flex-shrink: 0;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
-    .building-icon svg { width: 20px; height: 20px; }
-    .building-info { flex: 1; }
-    .building-name { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
-    .building-type { font-size: 12px; color: var(--text-secondary); text-transform: capitalize; margin-top: 2px; font-weight: 500; }
-    .building-percent { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+    .alt-icon svg { width: 16px; height: 16px; }
+    .alt-info { flex: 1; min-width: 0; }
+    .alt-name { font-size: 13px; font-weight: 700; }
+    .alt-meta { font-size: 11px; color: var(--text-secondary); margin-top: 1px; font-weight: 500; }
+    .alt-percent { font-size: 16px; font-weight: 900; letter-spacing: -0.4px; }
 
-    footer { padding: 22px 24px; text-align: center; color: var(--text-tertiary); font-size: 12px; background: white; border-top: 1px solid var(--warm-border); }
-    footer .bo-accent { color: var(--bo); font-weight: 700; }
+    /* NOTIFY TOGGLE */
+    .notify-card {
+      margin-top: 18px;
+      background: white;
+      border: 1px solid var(--warm-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .notify-icon-wrap {
+      width: 40px; height: 40px; border-radius: 11px;
+      background: linear-gradient(135deg, var(--bo), var(--bo-dark));
+      display: flex; align-items: center; justify-content: center;
+      color: white; flex-shrink: 0;
+    }
+    .notify-icon-wrap svg { width: 20px; height: 20px; }
+    .notify-info { flex: 1; }
+    .notify-title { font-size: 13px; font-weight: 700; letter-spacing: -0.2px; }
+    .notify-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
+    .toggle {
+      width: 44px; height: 26px;
+      background: #D6D3D1;
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.22s;
+      flex-shrink: 0;
+    }
+    .toggle::after {
+      content: ''; position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+      transition: left 0.22s;
+    }
+    .toggle.on { background: var(--bo); }
+    .toggle.on::after { left: 21px; }
 
+    /* TOAST */
+    .toast {
+      position: absolute;
+      bottom: calc(var(--tab-bar-h) + 18px);
+      left: 50%; transform: translateX(-50%) translateY(4px);
+      background: var(--text); color: white;
+      padding: 11px 18px; border-radius: 11px;
+      font-size: 13px; font-weight: 600;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.25);
+      z-index: 9999;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      display: flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast svg { width: 16px; height: 16px; color: #4ADE80; }
+
+    /* LEAFLET TWEAKS */
     .leaflet-popup-content { font-family: 'Inter', sans-serif !important; margin: 12px 16px; font-size: 13px; }
     .leaflet-popup-content b { color: var(--text); font-weight: 700; }
     .leaflet-popup-content-wrapper { border-radius: 12px !important; box-shadow: 0 12px 30px rgba(0,0,0,0.18) !important; }
-    .leaflet-marker-draggable { cursor: pointer !important; }
+    .leaflet-control-zoom a { border-radius: 8px !important; }
+
+    /* MEDIA: desktop tweaks */
+    @media (min-width: 700px) {
+      .brand h1 { font-size: 30px; }
+      .detail-hero { height: 220px; }
+      .detail-name { font-size: 30px; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="app">
     <header>
       <div class="brand-row">
         <div class="logo">
-          <!-- UT longhorn silhouette -->
           <svg viewBox="0 0 100 64" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-            <!-- Left horn: sweeps from center outward and slightly up -->
-            <path d="M 50 28
-                     C 42 28, 32 25, 22 21
-                     C 14 18, 6 17, 2 21
-                     C 5 19, 11 19, 18 21
-                     C 28 23, 38 26, 46 28
-                     C 48 28.5, 49.5 28.5, 50 28 Z" />
-            <!-- Right horn (mirror) -->
-            <path d="M 50 28
-                     C 58 28, 68 25, 78 21
-                     C 86 18, 94 17, 98 21
-                     C 95 19, 89 19, 82 21
-                     C 72 23, 62 26, 54 28
-                     C 52 28.5, 50.5 28.5, 50 28 Z" />
-            <!-- Head/snout (downward teardrop) -->
-            <path d="M 42 28
-                     L 42 46
-                     C 42 54, 46 58, 50 58
-                     C 54 58, 58 54, 58 46
-                     L 58 28
-                     C 58 28, 54 30, 50 30
-                     C 46 30, 42 28, 42 28 Z" />
-            <!-- Small nostril detail -->
+            <path d="M 50 28 C 42 28, 32 25, 22 21 C 14 18, 6 17, 2 21 C 5 19, 11 19, 18 21 C 28 23, 38 26, 46 28 C 48 28.5, 49.5 28.5, 50 28 Z" />
+            <path d="M 50 28 C 58 28, 68 25, 78 21 C 86 18, 94 17, 98 21 C 95 19, 89 19, 82 21 C 72 23, 62 26, 54 28 C 52 28.5, 50.5 28.5, 50 28 Z" />
+            <path d="M 42 28 L 42 46 C 42 54, 46 58, 50 58 C 54 58, 58 54, 58 46 L 58 28 C 58 28, 54 30, 50 30 C 46 30, 42 28, 42 28 Z" />
             <ellipse cx="46" cy="50" rx="1.2" ry="1.6" fill="white" opacity="0.7"/>
             <ellipse cx="54" cy="50" rx="1.2" ry="1.6" fill="white" opacity="0.7"/>
           </svg>
@@ -218,37 +620,108 @@
       </div>
     </header>
 
-    <div class="time-strip">Thursday · 6:00 PM · finals week</div>
+    <div class="view-container">
+      <!-- ========== MAP VIEW ========== -->
+      <div class="view active" data-view="map">
+        <div class="time-strip">Thursday · 6:00 PM · finals week</div>
+        <div class="filters">
+          <button class="filter-pill active" data-filter="all">All spaces</button>
+          <button class="filter-pill" data-filter="study">Study</button>
+          <button class="filter-pill" data-filter="dining">Dining</button>
+          <button class="filter-pill" data-filter="gym">Gyms</button>
+        </div>
+        <div class="map-and-sheet">
+          <div id="map"></div>
+          <div class="sheet collapsed" id="sheet">
+            <div class="sheet-handle-area" id="sheet-handle-area">
+              <div class="sheet-handle"></div>
+            </div>
+            <div class="sheet-header" id="sheet-header">
+              <div>
+                <div class="sheet-title">Available now</div>
+              </div>
+              <div class="sheet-count" id="sheet-count">9 spaces</div>
+            </div>
+            <div class="sheet-body">
+              <div class="mini-legend">
+                <div class="mini-legend-item"><div class="mini-legend-swatch" style="background: var(--empty)"></div>Empty</div>
+                <div class="mini-legend-item"><div class="mini-legend-swatch" style="background: var(--moderate)"></div>Moderate</div>
+                <div class="mini-legend-item"><div class="mini-legend-swatch" style="background: var(--busy)"></div>Busy</div>
+                <div class="mini-legend-item"><div class="mini-legend-swatch" style="background: var(--full)"></div>Full</div>
+              </div>
+              <div class="building-list" id="building-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div class="filters">
-      <button class="filter-pill active" data-filter="all">All spaces</button>
-      <button class="filter-pill" data-filter="study">Study</button>
-      <button class="filter-pill" data-filter="dining">Dining</button>
-      <button class="filter-pill" data-filter="gym">Gyms</button>
+      <!-- ========== SEARCH VIEW ========== -->
+      <div class="view" data-view="search">
+        <div class="search-bar-wrap">
+          <div class="search-input-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" class="search-input" id="search-input" placeholder="Search PCL, gyms, dining halls..." autocomplete="off" />
+            <button class="search-clear" id="search-clear" aria-label="Clear search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="search-results" id="search-results"></div>
+      </div>
+
+      <!-- ========== SAVED VIEW (placeholder for Build 2) ========== -->
+      <div class="view" data-view="saved">
+        <div class="placeholder-view">
+          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          <h2>No favorites yet</h2>
+          <p>Tap the star on any building's detail page to save it here for quick access.</p>
+        </div>
+      </div>
+
+      <!-- ========== PROFILE VIEW (placeholder for Build 2) ========== -->
+      <div class="view" data-view="profile">
+        <div class="placeholder-view">
+          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <h2>Profile & Settings</h2>
+          <p>Notification preferences, data sources, about, and more — coming in the next update.</p>
+        </div>
+      </div>
+
+      <!-- ========== DETAIL MODAL ========== -->
+      <div class="modal-overlay" id="modal-overlay"></div>
+      <div class="detail-modal" id="detail-modal"></div>
+
+      <!-- TOAST -->
+      <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="toast-text"></span>
+      </div>
     </div>
 
-    <div class="map-wrap">
-      <div id="map"></div>
-    </div>
-
-    <div class="legend">
-      <div class="legend-item"><div class="legend-swatch" style="background: var(--empty)"></div>Empty (under 30%)</div>
-      <div class="legend-item"><div class="legend-swatch" style="background: var(--moderate)"></div>Moderate (30–60%)</div>
-      <div class="legend-item"><div class="legend-swatch" style="background: var(--busy)"></div>Busy (60–85%)</div>
-      <div class="legend-item"><div class="legend-swatch" style="background: var(--full)"></div>Full (over 85%)</div>
-    </div>
-
-    <div class="groups-section">
-      <h2>Browse by availability</h2>
-      <div class="section-subtitle">Tap any group to expand or collapse</div>
-      <div id="groups-container"></div>
-    </div>
-
-    <footer>Built by <span class="bo-accent">Steven Wimberly</span> · Demo data · Map © OpenStreetMap</footer>
+    <!-- ========== TAB BAR ========== -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <div class="tab-label">Map</div>
+      </button>
+      <button class="tab-btn" data-tab="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <div class="tab-label">Search</div>
+      </button>
+      <button class="tab-btn" data-tab="saved">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        <div class="tab-label">Saved</div>
+      </button>
+      <button class="tab-btn" data-tab="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <div class="tab-label">Profile</div>
+      </button>
+    </nav>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    // ========== ICONS ==========
     const ICONS = {
       study:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
       dining: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
@@ -259,32 +732,113 @@
       dining: '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
       gym:    '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>'
     };
+    const QUICK_ICONS = {
+      clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      walk:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="m5 22 5-7 4 4 4-8 4 6"/><path d="m9 11-2 9"/></svg>',
+      users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      bell:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>'
+    };
 
+    // ========== BUILDINGS ==========
     const buildings = [
-      { id: 'pcl',     name: 'PCL',       fullName: 'PCL (Main Library)',         type: 'study',  lat: 30.2828, lng: -97.7384, percentFull: 95 },
-      { id: 'eer',     name: 'EER',       fullName: 'Engineering Library',         type: 'study',  lat: 30.2884, lng: -97.7354, percentFull: 92 },
-      { id: 'welch',   name: 'Welch',     fullName: 'Welch Hall',                  type: 'study',  lat: 30.2863, lng: -97.7376, percentFull: 88 },
-      { id: 'sac',     name: 'SAC',       fullName: 'Student Activity Center',     type: 'study',  lat: 30.2849, lng: -97.7367, percentFull: 35 },
-      { id: 'mccombs', name: 'McCombs',   fullName: 'McCombs School of Business',  type: 'study',  lat: 30.2842, lng: -97.7381, percentFull: 55 },
-      { id: 'j2',      name: 'J2',        fullName: 'J2 Dining',                   type: 'dining', lat: 30.2827, lng: -97.7368, percentFull: 90 },
-      { id: 'jcl',     name: 'JCL',       fullName: 'JCL Dining',                  type: 'dining', lat: 30.2831, lng: -97.7368, percentFull: 25 },
-      { id: 'kins',    name: 'Kinsolving',fullName: 'Kinsolving Dining',           type: 'dining', lat: 30.2902, lng: -97.7397, percentFull: 50 },
-      { id: 'gregory', name: 'Gregory',   fullName: 'Gregory Gymnasium',           type: 'gym',    lat: 30.2840, lng: -97.7364, percentFull: 97 }
+      { id: 'pcl',     name: 'PCL',       fullName: 'PCL (Main Library)',         type: 'study',  lat: 30.2828, lng: -97.7384, percentFull: 95, hours: '24/5', capacity: 3000 },
+      { id: 'eer',     name: 'EER',       fullName: 'Engineering Library',         type: 'study',  lat: 30.2884, lng: -97.7354, percentFull: 92, hours: '7am–2am', capacity: 600 },
+      { id: 'welch',   name: 'Welch',     fullName: 'Welch Hall',                  type: 'study',  lat: 30.2863, lng: -97.7376, percentFull: 88, hours: '7am–11pm', capacity: 450 },
+      { id: 'sac',     name: 'SAC',       fullName: 'Student Activity Center',     type: 'study',  lat: 30.2849, lng: -97.7367, percentFull: 35, hours: '7am–midnight', capacity: 1200 },
+      { id: 'mccombs', name: 'McCombs',   fullName: 'McCombs School of Business',  type: 'study',  lat: 30.2842, lng: -97.7381, percentFull: 55, hours: '7am–11pm', capacity: 800 },
+      { id: 'j2',      name: 'J2',        fullName: 'J2 Dining',                   type: 'dining', lat: 30.2827, lng: -97.7368, percentFull: 90, hours: '7am–9pm', capacity: 500 },
+      { id: 'jcl',     name: 'JCL',       fullName: 'JCL Dining',                  type: 'dining', lat: 30.2831, lng: -97.7368, percentFull: 25, hours: '7am–8pm', capacity: 400 },
+      { id: 'kins',    name: 'Kinsolving',fullName: 'Kinsolving Dining',           type: 'dining', lat: 30.2902, lng: -97.7397, percentFull: 50, hours: '7am–9pm', capacity: 450 },
+      { id: 'gregory', name: 'Gregory',   fullName: 'Gregory Gymnasium',           type: 'gym',    lat: 30.2840, lng: -97.7364, percentFull: 97, hours: '6am–11pm', capacity: 1500 }
     ];
 
+    // ========== HELPERS ==========
     const colors = { empty: '#16A34A', moderate: '#EAB308', busy: '#F97316', full: '#DC2626' };
-    function crowdLevel(p) {
-      if (p < 30) return 'empty';
-      if (p < 60) return 'moderate';
-      if (p < 85) return 'busy';
-      return 'full';
-    }
+    function crowdLevel(p) { return p < 30 ? 'empty' : p < 60 ? 'moderate' : p < 85 ? 'busy' : 'full'; }
     function crowdColor(p) { return colors[crowdLevel(p)]; }
+    function crowdLabel(p) {
+      const l = crowdLevel(p);
+      return l === 'empty' ? 'Empty' : l === 'moderate' ? 'Moderate' : l === 'busy' ? 'Busy' : 'Full';
+    }
     function textColor(p) { return p >= 60 ? '#ffffff' : '#1C1917'; }
+    function typeLabel(t) { return t === 'study' ? 'Study space' : t === 'dining' ? 'Dining hall' : 'Gym'; }
 
-    const map = L.map('map', { zoomControl: false }).setView([30.2862, -97.7378], 16);
+    // walking time from a hypothetical user point (PCL area) — gives plausible varied numbers
+    const USER_LAT = 30.2845, USER_LNG = -97.7375;
+    function walkMinutes(b) {
+      const dx = (b.lat - USER_LAT) * 364000;  // ft per degree latitude approx
+      const dy = (b.lng - USER_LNG) * 301000;  // ft per degree longitude at this latitude
+      const ft = Math.sqrt(dx*dx + dy*dy);
+      // walking pace ~280 ft/min
+      return Math.max(1, Math.round(ft / 280));
+    }
+
+    // Deterministic hash from string → 0..1
+    function hash01(s) {
+      let h = 0;
+      for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) & 0xffffffff; }
+      return Math.abs(h % 1000) / 1000;
+    }
+
+    // Generate hourly pattern (24 values) for today, peaking at typical busy times based on building type
+    function hourlyPattern(b) {
+      const out = [];
+      const peakHours = b.type === 'dining' ? [12, 18] : b.type === 'gym' ? [7, 17, 19] : [14, 19, 21];
+      const baseLevel = b.percentFull * 0.4;
+      const peakLevel = b.percentFull;
+      for (let h = 0; h < 24; h++) {
+        // closest peak distance
+        let minDist = 24;
+        peakHours.forEach(p => { const d = Math.min(Math.abs(h - p), 24 - Math.abs(h - p)); if (d < minDist) minDist = d; });
+        // late-night dampening (most buildings closed/quiet)
+        const lateDamp = (h < 6 || h > 22) ? 0.15 : 1;
+        const v = (baseLevel + (peakLevel - baseLevel) * Math.exp(-minDist * minDist / 6)) * lateDamp;
+        // add small deterministic noise
+        const noise = (hash01(b.id + h) - 0.5) * 8;
+        out.push(Math.max(0, Math.min(100, Math.round(v + noise))));
+      }
+      return out;
+    }
+
+    // Generate weekly pattern: 7 days × 24 hours
+    function weeklyPattern(b) {
+      const days = [];
+      for (let d = 0; d < 7; d++) {
+        const row = [];
+        // weekend dampening for academic spaces; gyms slightly busier on weekend mornings
+        const weekendFactor = (d === 0 || d === 6)
+          ? (b.type === 'gym' ? 0.85 : 0.55)
+          : 1.0;
+        const peakHours = b.type === 'dining' ? [12, 18] : b.type === 'gym' ? [7, 17, 19] : [14, 19, 21];
+        const baseLevel = b.percentFull * 0.4 * weekendFactor;
+        const peakLevel = b.percentFull * weekendFactor;
+        for (let h = 0; h < 24; h++) {
+          let minDist = 24;
+          peakHours.forEach(p => { const dist = Math.min(Math.abs(h - p), 24 - Math.abs(h - p)); if (dist < minDist) minDist = dist; });
+          const lateDamp = (h < 6 || h > 22) ? 0.15 : 1;
+          const v = (baseLevel + (peakLevel - baseLevel) * Math.exp(-minDist * minDist / 6)) * lateDamp;
+          const noise = (hash01(b.id + d + 'd' + h) - 0.5) * 10;
+          row.push(Math.max(0, Math.min(100, Math.round(v + noise))));
+        }
+        days.push(row);
+      }
+      return days;
+    }
+
+    // Find best alternatives: same type, lower crowd %, sorted by combined (low % + close distance)
+    function alternatives(b) {
+      return buildings
+        .filter(x => x.id !== b.id && x.type === b.type && x.percentFull < b.percentFull - 10)
+        .map(x => ({ ...x, score: x.percentFull * 0.7 + walkMinutes(x) * 5 }))
+        .sort((a, c) => a.score - c.score)
+        .slice(0, 3);
+    }
+
+    // ========== MAP SETUP ==========
+    const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([30.2862, -97.7378], 16);
     L.control.zoom({ position: 'topright' }).addTo(map);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
+    L.control.attribution({ position: 'bottomleft', prefix: false }).addAttribution('© OpenStreetMap').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
     const markersById = {};
     buildings.forEach(b => {
@@ -300,83 +854,290 @@
         '</div>';
       const icon = L.divIcon({ className: '', html: html, iconSize: [82, 60], iconAnchor: [41, 56] });
       const marker = L.marker([b.lat, b.lng], { icon: icon }).addTo(map);
-      marker.bindPopup('<b>' + b.fullName + '</b><br>' + b.percentFull + '% full');
+      marker.on('click', () => openDetail(b.id));
       markersById[b.id] = marker;
     });
 
-    const groupsContainer = document.getElementById('groups-container');
-    const levels = [
-      { key: 'empty',    title: 'Empty',    subtitle: 'plenty of room',     openByDefault: true },
-      { key: 'moderate', title: 'Moderate', subtitle: 'some availability',  openByDefault: true },
-      { key: 'busy',     title: 'Busy',     subtitle: 'getting crowded',    openByDefault: false },
-      { key: 'full',     title: 'Full',     subtitle: 'try somewhere else', openByDefault: false }
-    ];
+    // ========== BUILDING LIST ==========
+    const listEl = document.getElementById('building-list');
+    const sheetCountEl = document.getElementById('sheet-count');
     let activeFilter = 'all';
 
-    function renderGroups() {
-      groupsContainer.innerHTML = '';
-      levels.forEach(level => {
-        const inGroup = buildings.filter(b =>
-          crowdLevel(b.percentFull) === level.key &&
-          (activeFilter === 'all' || b.type === activeFilter)
-        );
-        if (inGroup.length === 0) return;
-        const color = colors[level.key];
-        const group = document.createElement('div');
-        group.className = 'group' + (level.openByDefault ? ' open' : '');
-        const buildingHtml = inGroup.map(b => {
-          const iconSvg = ICONS[b.type] || '';
-          return '<div class="building" data-id="' + b.id + '">' +
-            '<div class="building-icon" style="background:' + color + '">' + iconSvg + '</div>' +
-            '<div class="building-info">' +
-              '<div class="building-name">' + b.fullName + '</div>' +
-              '<div class="building-type">' + b.type + '</div>' +
-            '</div>' +
-            '<div class="building-percent" style="color:' + color + '">' + b.percentFull + '%</div>' +
-          '</div>';
-        }).join('');
-        group.innerHTML =
-          '<div class="group-header">' +
-            '<div class="group-dot" style="background:' + color + '"></div>' +
-            '<div class="group-title-area">' +
-              '<div class="group-title">' + level.title + '</div>' +
-              '<div class="group-count">' + inGroup.length + ' ' + (inGroup.length === 1 ? 'space' : 'spaces') + ' · ' + level.subtitle + '</div>' +
-            '</div>' +
-            '<svg class="group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
-          '</div>' +
-          '<div class="group-body">' + buildingHtml + '</div>';
-        group.querySelector('.group-header').addEventListener('click', () => group.classList.toggle('open'));
-        group.querySelectorAll('.building').forEach(el => {
-          el.addEventListener('click', () => {
-            const id = el.getAttribute('data-id');
-            const b = buildings.find(x => x.id === id);
-            map.setView([b.lat, b.lng], 18, { animate: true });
-            markersById[id].openPopup();
-            document.querySelector('.map-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          });
-        });
-        groupsContainer.appendChild(group);
-      });
+    function buildingCardHTML(b) {
+      const color = crowdColor(b.percentFull);
+      return '<div class="building-card" data-id="' + b.id + '">' +
+        '<div class="building-icon" style="background:' + color + '">' + (ICONS[b.type] || '') + '</div>' +
+        '<div class="building-info">' +
+          '<div class="building-name">' + b.fullName + '</div>' +
+          '<div class="building-meta">' + typeLabel(b.type) + '<span class="dot"></span>' + walkMinutes(b) + ' min walk</div>' +
+        '</div>' +
+        '<div class="building-right">' +
+          '<div class="building-percent" style="color:' + color + '">' + b.percentFull + '%</div>' +
+          '<div class="building-status" style="color:' + color + '">' + crowdLabel(b.percentFull) + '</div>' +
+        '</div>' +
+      '</div>';
     }
 
+    function renderList() {
+      const list = buildings
+        .filter(b => activeFilter === 'all' || b.type === activeFilter)
+        .sort((a, b) => a.percentFull - b.percentFull);
+      listEl.innerHTML = list.map(buildingCardHTML).join('');
+      sheetCountEl.textContent = list.length + ' ' + (list.length === 1 ? 'space' : 'spaces');
+      // attach click handlers
+      listEl.querySelectorAll('.building-card').forEach(el => {
+        el.addEventListener('click', () => openDetail(el.dataset.id));
+      });
+    }
+    renderList();
+
+    // ========== FILTERS ==========
     document.querySelectorAll('.filter-pill').forEach(pill => {
       pill.addEventListener('click', () => {
         document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
-        activeFilter = pill.getAttribute('data-filter');
-        renderGroups();
+        activeFilter = pill.dataset.filter;
+        renderList();
         buildings.forEach(b => {
           const show = activeFilter === 'all' || b.type === activeFilter;
-          if (show) {
-            if (!map.hasLayer(markersById[b.id])) markersById[b.id].addTo(map);
-          } else {
-            if (map.hasLayer(markersById[b.id])) map.removeLayer(markersById[b.id]);
-          }
+          if (show && !map.hasLayer(markersById[b.id])) markersById[b.id].addTo(map);
+          if (!show && map.hasLayer(markersById[b.id])) map.removeLayer(markersById[b.id]);
         });
       });
     });
 
-    renderGroups();
+    // ========== BOTTOM SHEET ==========
+    const sheet = document.getElementById('sheet');
+    const sheetHandleArea = document.getElementById('sheet-handle-area');
+    const sheetHeader = document.getElementById('sheet-header');
+    function toggleSheet() {
+      sheet.classList.toggle('collapsed');
+      sheet.classList.toggle('expanded');
+      // give the map a beat then invalidate size so it lays out correctly
+      setTimeout(() => map.invalidateSize(), 340);
+    }
+    sheetHandleArea.addEventListener('click', toggleSheet);
+    sheetHeader.addEventListener('click', toggleSheet);
+
+    // ========== TABS ==========
+    const views = document.querySelectorAll('.view');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+        views.forEach(v => v.classList.toggle('active', v.dataset.view === tab));
+        if (tab === 'map') setTimeout(() => map.invalidateSize(), 50);
+        if (tab === 'search') setTimeout(() => document.getElementById('search-input').focus(), 50);
+      });
+    });
+
+    // ========== SEARCH ==========
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    const searchClear = document.getElementById('search-clear');
+
+    function renderSearch(query) {
+      const q = (query || '').trim().toLowerCase();
+      if (!q) {
+        searchResults.innerHTML =
+          '<div class="search-section-label">All spaces</div>' +
+          '<div class="building-list">' +
+            buildings.slice().sort((a,b)=>a.percentFull-b.percentFull).map(buildingCardHTML).join('') +
+          '</div>';
+      } else {
+        const matches = buildings.filter(b =>
+          b.name.toLowerCase().includes(q) ||
+          b.fullName.toLowerCase().includes(q) ||
+          b.type.toLowerCase().includes(q) ||
+          typeLabel(b.type).toLowerCase().includes(q)
+        );
+        if (matches.length === 0) {
+          searchResults.innerHTML =
+            '<div class="empty-state">' +
+              '<svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' +
+              '<div class="empty-state-title">No spaces match "' + q + '"</div>' +
+              '<div class="empty-state-text">Try searching for "PCL", "gym", or "dining".</div>' +
+            '</div>';
+        } else {
+          searchResults.innerHTML =
+            '<div class="search-section-label">' + matches.length + ' result' + (matches.length === 1 ? '' : 's') + '</div>' +
+            '<div class="building-list">' +
+              matches.map(buildingCardHTML).join('') +
+            '</div>';
+        }
+      }
+      searchResults.querySelectorAll('.building-card').forEach(el => {
+        el.addEventListener('click', () => openDetail(el.dataset.id));
+      });
+    }
+    renderSearch('');
+    searchInput.addEventListener('input', e => {
+      renderSearch(e.target.value);
+      searchClear.classList.toggle('visible', e.target.value.length > 0);
+    });
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchClear.classList.remove('visible');
+      renderSearch('');
+      searchInput.focus();
+    });
+
+    // ========== BUILDING DETAIL MODAL ==========
+    const modalOverlay = document.getElementById('modal-overlay');
+    const detailModal = document.getElementById('detail-modal');
+    let notifyState = {};   // {buildingId: true/false}
+
+    function detailHTML(b) {
+      const color = crowdColor(b.percentFull);
+      const hourly = hourlyPattern(b);
+      const nowHour = 18; // matches "Thursday 6PM" framing
+      const weekly = weeklyPattern(b);
+      const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const alts = alternatives(b);
+      const isOn = !!notifyState[b.id];
+
+      const hourlyBarsHTML = hourly.map((v, h) =>
+        '<div class="hourly-bar' + (h === nowHour ? ' now' : '') + '" style="height:' + Math.max(4, v) + '%; background:' + crowdColor(v) + '" title="' + h + ':00 — ' + v + '%"></div>'
+      ).join('');
+
+      const heatmapHTML = weekly.map((row, d) =>
+        '<div class="heatmap-row">' +
+          '<div class="heatmap-day-label">' + dayNames[d] + '</div>' +
+          row.map(v => '<div class="heatmap-cell" style="background:' + crowdColor(v) + '; opacity:' + (0.35 + v/150) + '"></div>').join('') +
+        '</div>'
+      ).join('') +
+      '<div class="heatmap-hour-row">' +
+        '<span></span>' +
+        '<span class="heatmap-hour-label">12a</span>' +
+        '<span class="heatmap-hour-label">6a</span>' +
+        '<span class="heatmap-hour-label">12p</span>' +
+        '<span class="heatmap-hour-label">6p</span>' +
+      '</div>';
+
+      const altsHTML = alts.length === 0
+        ? '<div style="background:white; border:1px solid var(--warm-border); border-radius:12px; padding:14px; text-align:center; font-size:12px; color:var(--text-secondary)">No nearby alternatives in this category — try a different space type.</div>'
+        : alts.map(a => {
+          const ac = crowdColor(a.percentFull);
+          return '<div class="alt-card" data-id="' + a.id + '">' +
+            '<div class="alt-icon" style="background:' + ac + '">' + (ICONS[a.type] || '') + '</div>' +
+            '<div class="alt-info">' +
+              '<div class="alt-name">' + a.fullName + '</div>' +
+              '<div class="alt-meta">' + walkMinutes(a) + ' min walk · ' + crowdLabel(a.percentFull) + '</div>' +
+            '</div>' +
+            '<div class="alt-percent" style="color:' + ac + '">' + a.percentFull + '%</div>' +
+          '</div>';
+        }).join('');
+
+      return '' +
+        '<div class="detail-hero">' +
+          '<div class="detail-hero-bg" style="background: linear-gradient(135deg, ' + color + ' 0%, ' + shade(color, -25) + ' 100%);"></div>' +
+          '<div class="detail-hero-icon">' + ICONS[b.type] + '</div>' +
+          '<button class="detail-close" id="detail-close-btn" aria-label="Close">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+          '</button>' +
+          '<div class="detail-hero-content">' +
+            '<div class="detail-type-pill">' + PIN_ICONS[b.type] + typeLabel(b.type) + '</div>' +
+            '<div class="detail-name">' + b.fullName + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-body">' +
+          '<div class="status-row">' +
+            '<div class="status-bar-area">' +
+              '<div class="status-label">Right now</div>' +
+              '<div class="status-bar-bg"><div class="status-bar-fill" style="width:' + b.percentFull + '%; background:' + color + '"></div></div>' +
+            '</div>' +
+            '<div style="text-align:right">' +
+              '<div class="status-percent" style="color:' + color + '">' + b.percentFull + '%</div>' +
+              '<div class="status-percent-label" style="color:' + color + '">' + crowdLabel(b.percentFull) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="quick-facts">' +
+            '<div class="quick-fact">' +
+              QUICK_ICONS.clock +
+              '<div class="quick-fact-value">' + b.hours + '</div>' +
+              '<div class="quick-fact-label">Hours</div>' +
+            '</div>' +
+            '<div class="quick-fact">' +
+              QUICK_ICONS.walk +
+              '<div class="quick-fact-value">' + walkMinutes(b) + ' min</div>' +
+              '<div class="quick-fact-label">Walk</div>' +
+            '</div>' +
+            '<div class="quick-fact">' +
+              QUICK_ICONS.users +
+              '<div class="quick-fact-value">' + Math.round(b.capacity * b.percentFull/100).toLocaleString() + '</div>' +
+              '<div class="quick-fact-label">Of ' + b.capacity.toLocaleString() + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="section-h">Today\'s busyness <span class="h-meta">by hour</span></div>' +
+          '<div class="hourly-chart">' +
+            '<div class="hourly-bars">' + hourlyBarsHTML + '</div>' +
+            '<div class="hourly-labels"><span>12a</span><span>6a</span><span>12p</span><span>6p</span><span>11p</span></div>' +
+          '</div>' +
+          '<div class="section-h">Typical week <span class="h-meta">avg by day & hour</span></div>' +
+          '<div class="heatmap">' + heatmapHTML + '</div>' +
+          '<div class="section-h">Try instead</div>' +
+          '<div class="alternatives">' + altsHTML + '</div>' +
+          '<div class="notify-card">' +
+            '<div class="notify-icon-wrap">' + QUICK_ICONS.bell + '</div>' +
+            '<div class="notify-info">' +
+              '<div class="notify-title">Notify when below 50%</div>' +
+              '<div class="notify-desc">We\'ll ping you when ' + b.name + ' opens up</div>' +
+            '</div>' +
+            '<div class="toggle' + (isOn ? ' on' : '') + '" id="notify-toggle"></div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    // Lighten/darken hex color
+    function shade(hex, amt) {
+      const h = hex.replace('#', '');
+      let r = parseInt(h.substring(0,2), 16);
+      let g = parseInt(h.substring(2,4), 16);
+      let bl = parseInt(h.substring(4,6), 16);
+      r = Math.max(0, Math.min(255, r + amt));
+      g = Math.max(0, Math.min(255, g + amt));
+      bl = Math.max(0, Math.min(255, bl + amt));
+      return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + bl.toString(16).padStart(2,'0');
+    }
+
+    function openDetail(buildingId) {
+      const b = buildings.find(x => x.id === buildingId);
+      if (!b) return;
+      detailModal.innerHTML = detailHTML(b);
+      modalOverlay.classList.add('show');
+      // double-rAF so the transform transition actually plays
+      requestAnimationFrame(() => requestAnimationFrame(() => detailModal.classList.add('show')));
+      // wire up close + notify + alternatives
+      detailModal.querySelector('#detail-close-btn').addEventListener('click', closeDetail);
+      const tog = detailModal.querySelector('#notify-toggle');
+      tog.addEventListener('click', () => {
+        notifyState[b.id] = !notifyState[b.id];
+        tog.classList.toggle('on', notifyState[b.id]);
+        showToast(notifyState[b.id] ? 'Notification set for ' + b.name : 'Notification turned off');
+      });
+      detailModal.querySelectorAll('.alt-card').forEach(el => {
+        el.addEventListener('click', () => {
+          closeDetail();
+          setTimeout(() => openDetail(el.dataset.id), 340);
+        });
+      });
+    }
+    function closeDetail() {
+      detailModal.classList.remove('show');
+      modalOverlay.classList.remove('show');
+      setTimeout(() => { detailModal.innerHTML = ''; }, 340);
+    }
+    modalOverlay.addEventListener('click', closeDetail);
+
+    // ========== TOAST ==========
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-text').textContent = msg;
+      t.classList.add('show');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
   </script>
 </body>
 </html>
