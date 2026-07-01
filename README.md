@@ -1,4 +1,4 @@
-# UT Buzz 🤘
+# UT Buzz
 
 **Live campus crowd levels for UT Austin — see where the seats are before you walk there.**
 
