@@ -2,7 +2,7 @@
 
 **Live campus crowd levels for UT Austin — see where the seats are before you walk there.**
 
-[**Live demo →**](https://stevenwimberly.github.io/buzz/) · [Proposal (PDF)](#) · Built by [Steven Wimberly](https://stevenwimberly.github.io)
+Built by [Steven Wimberly](https://stevenwimberly.github.io)
 
 UT Austin has ~55,000 students competing for a finite supply of study, dining, and gym space. The campus doesn't lack capacity — it lacks *visibility* into where capacity exists. Students routinely lose 15+ minutes a day walking between full buildings looking for a seat; across the student body that's roughly **2.5 million student-hours per year**. Buzz answers one question: *where can I actually get a seat right now?*
 
