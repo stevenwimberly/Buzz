@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Buzz — UT Campus Crowd Levels</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -81,17 +81,16 @@
     .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,0.35); animation: pulse 2s infinite; }
     .live-text { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: white; }
     @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+    @media (prefers-reduced-motion: reduce) {
+      .live-dot { animation: none; }
+      * { transition-duration: 0.01ms !important; }
+    }
 
     /* ===== VIEW CONTAINER ===== */
-    .view-container {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
+    .view-container { flex: 1; position: relative; overflow: hidden; }
     .view {
       position: absolute; inset: 0;
-      display: none;
-      flex-direction: column;
+      display: none; flex-direction: column;
       background: var(--cream);
     }
     .view.active { display: flex; }
@@ -118,14 +117,13 @@
       transition: all 0.18s; white-space: nowrap;
     }
     .filter-pill:hover { background: #F5EBD9; color: var(--text); }
+    .filter-pill:focus-visible { outline: 2px solid var(--bo); outline-offset: 2px; }
     .filter-pill.active {
       background: var(--bo); color: white; border-color: var(--bo);
       box-shadow: var(--shadow-bo);
     }
 
-    .map-and-sheet {
-      flex: 1; position: relative; overflow: hidden;
-    }
+    .map-and-sheet { flex: 1; position: relative; overflow: hidden; background: #EDE7DA; }
     #map { position: absolute; inset: 0; }
 
     /* ===== BOTTOM SHEET ===== */
@@ -142,18 +140,8 @@
     }
     .sheet.collapsed { transform: translateY(calc(100% - 110px)); }
     .sheet.expanded { transform: translateY(0); }
-    .sheet-handle-area {
-      padding: 8px 0 6px;
-      cursor: pointer;
-      user-select: none;
-      flex-shrink: 0;
-    }
-    .sheet-handle {
-      width: 38px; height: 4px;
-      background: #D6D3D1;
-      border-radius: 999px;
-      margin: 0 auto;
-    }
+    .sheet-handle-area { padding: 8px 0 6px; cursor: pointer; user-select: none; flex-shrink: 0; }
+    .sheet-handle { width: 38px; height: 4px; background: #D6D3D1; border-radius: 999px; margin: 0 auto; }
     .sheet-header {
       padding: 6px 20px 14px;
       display: flex; align-items: center; justify-content: space-between;
@@ -163,20 +151,13 @@
     }
     .sheet-title { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
     .sheet-count { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
-    .sheet-body {
-      flex: 1;
-      overflow-y: auto;
-      padding-bottom: 12px;
-      -webkit-overflow-scrolling: touch;
-    }
+    .sheet-body { flex: 1; overflow-y: auto; padding-bottom: 12px; -webkit-overflow-scrolling: touch; }
 
-    /* ===== LEGEND (in sheet) ===== */
     .mini-legend {
       display: flex; gap: 14px;
       padding: 12px 20px;
       border-bottom: 1px solid var(--warm-border);
-      overflow-x: auto;
-      scrollbar-width: none;
+      overflow-x: auto; scrollbar-width: none;
     }
     .mini-legend::-webkit-scrollbar { display: none; }
     .mini-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
@@ -199,15 +180,22 @@
       display: flex; align-items: center; justify-content: center;
       color: white; flex-shrink: 0;
       box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+      transition: background 0.6s;
     }
     .building-icon svg { width: 20px; height: 20px; }
     .building-info { flex: 1; min-width: 0; }
-    .building-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; }
+    .building-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.2px; display: flex; align-items: center; gap: 6px; }
+    .fav-star-inline { width: 13px; height: 13px; color: var(--bo); flex-shrink: 0; }
     .building-meta { font-size: 11px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
     .building-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-tertiary); }
     .building-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-    .building-percent { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; }
-    .building-status { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .building-percent { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; transition: color 0.6s; }
+    .building-status { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.6s; }
+    .trend-chip {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 700;
+    }
+    .trend-chip svg { width: 10px; height: 10px; }
 
     /* ===== MAP PIN ===== */
     .map-pin-wrap { position: relative; cursor: pointer; transition: transform 0.2s ease; }
@@ -219,6 +207,7 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.32), 0 1px 3px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.3);
       min-width: 60px;
       position: relative;
+      transition: background 0.6s;
     }
     .map-pin::before {
       content: ''; position: absolute;
@@ -233,17 +222,10 @@
     .map-pin .pct { display: block; font-size: 10px; font-weight: 600; margin-top: 1px; opacity: 0.92; }
 
     /* ===== SEARCH VIEW ===== */
-    .search-bar-wrap {
-      padding: 14px 16px; background: white;
-      border-bottom: 1px solid var(--warm-border);
-      flex-shrink: 0;
-    }
+    .search-bar-wrap { padding: 14px 16px; background: white; border-bottom: 1px solid var(--warm-border); flex-shrink: 0; }
     .search-input-wrap {
-      position: relative;
-      display: flex; align-items: center;
-      background: var(--cream-tint);
-      border-radius: 14px;
-      padding: 0 14px;
+      position: relative; display: flex; align-items: center;
+      background: var(--cream-tint); border-radius: 14px; padding: 0 14px;
       transition: box-shadow 0.18s, background 0.18s;
     }
     .search-input-wrap:focus-within {
@@ -253,15 +235,13 @@
     .search-icon { width: 18px; height: 18px; color: var(--text-tertiary); flex-shrink: 0; }
     .search-input {
       flex: 1; border: none; outline: none; background: transparent;
-      padding: 13px 10px;
-      font-size: 15px; font-family: inherit; color: var(--text);
+      padding: 13px 10px; font-size: 15px; font-family: inherit; color: var(--text);
     }
     .search-input::placeholder { color: var(--text-tertiary); }
     .search-clear {
       width: 22px; height: 22px; border-radius: 50%;
       background: var(--text-tertiary); color: white;
-      display: none; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      display: none; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .search-clear.visible { display: flex; }
     .search-clear svg { width: 12px; height: 12px; }
@@ -273,14 +253,13 @@
       text-transform: uppercase; letter-spacing: 1px;
       color: var(--text-tertiary);
     }
-    .empty-state {
-      padding: 60px 20px; text-align: center; color: var(--text-secondary);
-    }
+    .empty-state { padding: 60px 20px; text-align: center; color: var(--text-secondary); }
     .empty-state-icon { width: 48px; height: 48px; margin: 0 auto 14px; color: var(--text-tertiary); }
     .empty-state-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
     .empty-state-text { font-size: 13px; line-height: 1.5; }
 
-    /* ===== SAVED & PROFILE VIEW (placeholders for Build 2) ===== */
+    /* ===== SAVED VIEW ===== */
+    .saved-body { flex: 1; overflow-y: auto; padding: 6px 12px 12px; -webkit-overflow-scrolling: touch; }
     .placeholder-view {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -290,36 +269,83 @@
     .placeholder-view h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
     .placeholder-view p { font-size: 14px; color: var(--text-secondary); line-height: 1.5; max-width: 280px; }
 
-    /* ===== TAB BAR ===== */
-    .tab-bar {
-      flex-shrink: 0;
-      height: var(--tab-bar-h);
-      background: white;
-      border-top: 1px solid var(--warm-border);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      padding-bottom: env(safe-area-inset-bottom, 0);
+    /* ===== PROFILE VIEW ===== */
+    .profile-body { flex: 1; overflow-y: auto; padding: 16px 16px 24px; -webkit-overflow-scrolling: touch; }
+    .profile-hero {
+      display: flex; align-items: center; gap: 14px;
+      background: linear-gradient(135deg, var(--bo) 0%, var(--bo-dark) 100%);
+      border-radius: 18px; padding: 18px;
+      color: white; margin-bottom: 16px;
+      box-shadow: var(--shadow-bo);
+      position: relative; overflow: hidden;
     }
-    .tab-btn {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px;
+    .profile-hero::before {
+      content: ''; position: absolute; top: -70%; right: -15%;
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(255,255,255,0.14) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .profile-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 900; flex-shrink: 0;
+    }
+    .profile-hero-name { font-size: 18px; font-weight: 800; letter-spacing: -0.4px; }
+    .profile-hero-sub { font-size: 12px; opacity: 0.85; font-weight: 500; margin-top: 2px; }
+    .profile-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      margin-bottom: 18px;
+    }
+    .profile-stat {
+      background: white; border: 1px solid var(--warm-border);
+      border-radius: 12px; padding: 12px; text-align: center;
+    }
+    .profile-stat-value { font-size: 20px; font-weight: 900; color: var(--bo); letter-spacing: -0.5px; }
+    .profile-stat-label { font-size: 10px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+    .settings-group {
+      background: white; border: 1px solid var(--warm-border);
+      border-radius: 14px; overflow: hidden; margin-bottom: 14px;
+    }
+    .settings-group-title {
+      padding: 12px 16px 8px;
+      font-size: 11px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 1px;
       color: var(--text-tertiary);
-      transition: color 0.15s;
-      padding: 8px 4px;
     }
-    .tab-btn svg { width: 22px; height: 22px; }
-    .tab-btn .tab-label { font-size: 10px; font-weight: 700; letter-spacing: 0.2px; }
-    .tab-btn:hover { color: var(--text-secondary); }
-    .tab-btn.active { color: var(--bo); }
+    .settings-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--warm-border);
+    }
+    .settings-row-icon {
+      width: 32px; height: 32px; border-radius: 9px;
+      background: var(--cream-tint); color: var(--bo);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .settings-row-icon svg { width: 16px; height: 16px; }
+    .settings-row-main { flex: 1; min-width: 0; }
+    .settings-row-title { font-size: 13px; font-weight: 700; }
+    .settings-row-desc { font-size: 11px; color: var(--text-secondary); margin-top: 1px; font-weight: 500; line-height: 1.4; }
+    .alert-remove {
+      font-size: 11px; font-weight: 700; color: var(--full);
+      padding: 6px 10px; border-radius: 8px;
+      background: rgba(220,38,38,0.08);
+      flex-shrink: 0;
+    }
+    .about-text {
+      padding: 4px 16px 14px;
+      font-size: 12px; color: var(--text-secondary); line-height: 1.55;
+    }
 
-    /* ===== BUILDING DETAIL MODAL ===== */
+    /* ===== DETAIL MODAL ===== */
     .modal-overlay {
       position: absolute; inset: 0;
       background: rgba(28, 25, 23, 0.5);
       backdrop-filter: blur(4px);
       z-index: 1000;
-      display: none;
-      opacity: 0;
+      display: none; opacity: 0;
       transition: opacity 0.25s;
     }
     .modal-overlay.show { display: block; opacity: 1; }
@@ -337,46 +363,34 @@
     }
     .detail-modal.show { transform: translateY(0); }
     .detail-hero {
-      position: relative;
-      height: 200px;
+      position: relative; height: 200px;
       display: flex; align-items: flex-end;
-      flex-shrink: 0;
-      overflow: hidden;
+      flex-shrink: 0; overflow: hidden;
     }
-    .detail-hero-bg {
-      position: absolute; inset: 0;
-    }
+    .detail-hero-bg { position: absolute; inset: 0; }
     .detail-hero-icon {
-      position: absolute;
-      right: -10px; top: -20px;
-      width: 220px; height: 220px;
-      opacity: 0.18;
-      color: white;
+      position: absolute; right: -10px; top: -20px;
+      width: 220px; height: 220px; opacity: 0.18; color: white;
     }
-    .detail-close {
-      position: absolute;
-      top: 14px; left: 14px;
-      width: 36px; height: 36px;
-      border-radius: 50%;
+    .detail-close, .detail-fav {
+      position: absolute; top: 14px;
+      width: 36px; height: 36px; border-radius: 50%;
       background: rgba(255,255,255,0.92);
       display: flex; align-items: center; justify-content: center;
       box-shadow: 0 4px 12px rgba(0,0,0,0.18);
       z-index: 2;
     }
+    .detail-close { left: 14px; }
+    .detail-fav { right: 14px; }
     .detail-close svg { width: 18px; height: 18px; color: var(--text); }
-    .detail-hero-content {
-      position: relative; z-index: 1;
-      padding: 18px 22px;
-      color: white;
-      width: 100%;
-    }
+    .detail-fav svg { width: 19px; height: 19px; color: var(--text-tertiary); fill: none; transition: color 0.15s; }
+    .detail-fav.faved svg { color: var(--bo); fill: var(--bo); }
+    .detail-hero-content { position: relative; z-index: 1; padding: 18px 22px; color: white; width: 100%; }
     .detail-type-pill {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 4px 10px; border-radius: 999px;
-      background: rgba(255,255,255,0.22);
-      backdrop-filter: blur(8px);
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.4px; text-transform: uppercase;
+      background: rgba(255,255,255,0.22); backdrop-filter: blur(8px);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
       margin-bottom: 8px;
     }
     .detail-type-pill svg { width: 12px; height: 12px; }
@@ -388,10 +402,9 @@
       display: flex; align-items: center; justify-content: space-between;
       gap: 14px;
       padding: 14px 16px;
-      background: white;
-      border-radius: 14px;
+      background: white; border-radius: 14px;
       border: 1px solid var(--warm-border);
-      margin-bottom: 14px;
+      margin-bottom: 10px;
     }
     .status-bar-area { flex: 1; }
     .status-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 6px; }
@@ -400,136 +413,135 @@
     .status-percent { font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
     .status-percent-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
 
-    .quick-facts {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 8px; margin-bottom: 18px;
+    /* FORECAST STRIP */
+    .forecast-strip {
+      display: flex; gap: 8px; margin-bottom: 14px;
     }
-    .quick-fact {
+    .forecast-card {
+      flex: 1;
       background: white; border: 1px solid var(--warm-border);
       border-radius: 12px; padding: 11px 12px;
-      text-align: center;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .forecast-icon {
+      width: 30px; height: 30px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; flex-shrink: 0;
+    }
+    .forecast-icon svg { width: 15px; height: 15px; }
+    .forecast-value { font-size: 13px; font-weight: 800; letter-spacing: -0.2px; line-height: 1.2; }
+    .forecast-label { font-size: 10px; color: var(--text-secondary); font-weight: 600; }
+
+    .quick-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+    .quick-fact {
+      background: white; border: 1px solid var(--warm-border);
+      border-radius: 12px; padding: 11px 12px; text-align: center;
     }
     .quick-fact-icon { width: 18px; height: 18px; color: var(--bo); margin: 0 auto 5px; display: block; }
     .quick-fact-value { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.2px; }
     .quick-fact-label { font-size: 10px; color: var(--text-secondary); font-weight: 600; margin-top: 1px; }
 
     .section-h {
-      font-size: 13px; font-weight: 800;
-      color: var(--text);
-      letter-spacing: -0.1px;
+      font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.1px;
       margin: 18px 0 10px;
       display: flex; align-items: center; justify-content: space-between;
     }
     .section-h .h-meta { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
 
-    /* HOURLY CHART */
-    .hourly-chart {
-      background: white;
-      border: 1px solid var(--warm-border);
-      border-radius: 14px;
-      padding: 14px 12px 8px;
-    }
-    .hourly-bars {
-      display: flex; align-items: flex-end;
-      gap: 3px; height: 80px;
-      padding: 0 4px;
-    }
-    .hourly-bar {
-      flex: 1;
-      border-radius: 3px 3px 0 0;
-      position: relative;
-      min-height: 4px;
-      transition: opacity 0.2s;
-    }
-    .hourly-bar.now {
-      box-shadow: 0 0 0 2px white, 0 0 0 4px var(--bo);
-      z-index: 2;
-    }
+    .hourly-chart { background: white; border: 1px solid var(--warm-border); border-radius: 14px; padding: 20px 12px 8px; }
+    .hourly-bars { display: flex; align-items: flex-end; gap: 3px; height: 80px; padding: 0 4px; }
+    .hourly-bar { flex: 1; border-radius: 3px 3px 0 0; position: relative; min-height: 4px; transition: opacity 0.2s; }
+    .hourly-bar.now { box-shadow: 0 0 0 2px white, 0 0 0 4px var(--bo); z-index: 2; }
     .hourly-bar.now::after {
-      content: 'NOW';
-      position: absolute;
+      content: 'NOW'; position: absolute;
       top: -16px; left: 50%; transform: translateX(-50%);
-      font-size: 8px; font-weight: 900;
-      color: var(--bo);
-      letter-spacing: 0.5px;
+      font-size: 8px; font-weight: 900; color: var(--bo); letter-spacing: 0.5px;
     }
-    .hourly-labels {
-      display: flex; padding: 8px 4px 0;
-      font-size: 9px; color: var(--text-tertiary);
-      font-weight: 600;
-      justify-content: space-between;
-    }
+    .hourly-labels { display: flex; padding: 8px 4px 0; font-size: 9px; color: var(--text-tertiary); font-weight: 600; justify-content: space-between; }
 
-    /* WEEKLY HEATMAP */
-    .heatmap {
-      background: white;
-      border: 1px solid var(--warm-border);
-      border-radius: 14px;
-      padding: 12px;
-    }
-    .heatmap-row {
-      display: grid;
-      grid-template-columns: 28px repeat(24, 1fr);
-      gap: 2px;
-      margin-bottom: 2px;
-    }
+    .heatmap { background: white; border: 1px solid var(--warm-border); border-radius: 14px; padding: 12px; }
+    .heatmap-row { display: grid; grid-template-columns: 28px repeat(24, 1fr); gap: 2px; margin-bottom: 2px; }
     .heatmap-row:last-child { margin-bottom: 0; }
-    .heatmap-day-label {
-      font-size: 9px; font-weight: 700; color: var(--text-tertiary);
-      display: flex; align-items: center; padding-right: 6px;
-      letter-spacing: 0.3px;
-    }
-    .heatmap-cell {
-      aspect-ratio: 1;
-      border-radius: 2px;
-      max-height: 14px;
-    }
+    .heatmap-day-label { font-size: 9px; font-weight: 700; color: var(--text-tertiary); display: flex; align-items: center; padding-right: 6px; letter-spacing: 0.3px; }
+    .heatmap-cell { aspect-ratio: 1; border-radius: 2px; max-height: 14px; }
     .heatmap-hour-row {
-      display: grid;
-      grid-template-columns: 28px repeat(24, 1fr);
-      gap: 2px;
-      margin-top: 6px;
-      font-size: 9px;
-      color: var(--text-tertiary);
-      font-weight: 600;
+      display: grid; grid-template-columns: 28px repeat(24, 1fr); gap: 2px;
+      margin-top: 6px; font-size: 9px; color: var(--text-tertiary); font-weight: 600;
     }
     .heatmap-hour-row span:first-child { padding-right: 6px; }
-    .heatmap-hour-label {
-      text-align: center;
-      grid-column: span 6;
-    }
+    .heatmap-hour-label { text-align: center; grid-column: span 6; }
 
-    /* ALTERNATIVES */
-    .alternatives {
-      display: flex; flex-direction: column; gap: 6px;
-    }
+    .alternatives { display: flex; flex-direction: column; gap: 6px; }
     .alt-card {
       display: flex; align-items: center; gap: 12px;
       padding: 11px 12px;
-      background: white;
-      border: 1px solid var(--warm-border);
-      border-radius: 12px;
-      cursor: pointer;
-      transition: background 0.15s;
+      background: white; border: 1px solid var(--warm-border); border-radius: 12px;
+      cursor: pointer; transition: background 0.15s;
     }
     .alt-card:hover { background: var(--cream-tint); }
-    .alt-icon {
-      width: 32px; height: 32px; border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
-      color: white; flex-shrink: 0;
-    }
+    .alt-icon { width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
     .alt-icon svg { width: 16px; height: 16px; }
     .alt-info { flex: 1; min-width: 0; }
     .alt-name { font-size: 13px; font-weight: 700; }
     .alt-meta { font-size: 11px; color: var(--text-secondary); margin-top: 1px; font-weight: 500; }
     .alt-percent { font-size: 16px; font-weight: 900; letter-spacing: -0.4px; }
 
-    /* NOTIFY TOGGLE */
+    /* ===== BUZZ REPORTS ===== */
+    .reports-feed { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .report-card {
+      background: white; border: 1px solid var(--warm-border); border-radius: 12px;
+      padding: 10px 12px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .report-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--cream-tint); color: var(--bo-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; flex-shrink: 0;
+      border: 1px solid var(--warm-border);
+    }
+    .report-main { flex: 1; min-width: 0; }
+    .report-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .report-tag {
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 2px 8px; border-radius: 999px;
+    }
+    .report-time { font-size: 10px; color: var(--text-tertiary); font-weight: 600; }
+    .report-text { font-size: 12px; color: var(--text); margin-top: 4px; line-height: 1.45; font-weight: 500; }
+    .report-compose {
+      background: white; border: 1px solid var(--warm-border); border-radius: 14px;
+      padding: 12px;
+    }
+    .report-compose-title { font-size: 12px; font-weight: 800; margin-bottom: 8px; }
+    .report-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .report-chip {
+      padding: 7px 12px; border-radius: 999px;
+      font-size: 11.5px; font-weight: 700;
+      background: var(--cream-tint); color: var(--text-secondary);
+      border: 1.5px solid transparent;
+      transition: all 0.15s;
+    }
+    .report-chip.selected { background: var(--bo); color: white; box-shadow: var(--shadow-bo); }
+    .report-input-row { display: flex; gap: 8px; }
+    .report-input {
+      flex: 1; border: 1.5px solid var(--warm-border); border-radius: 10px;
+      padding: 9px 12px; font-size: 13px; font-family: inherit; outline: none;
+      background: var(--cream-tint); color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .report-input:focus { border-color: var(--bo); background: white; }
+    .report-send {
+      padding: 9px 16px; border-radius: 10px;
+      background: var(--bo); color: white;
+      font-size: 13px; font-weight: 800;
+      transition: opacity 0.15s;
+    }
+    .report-send:disabled { opacity: 0.4; cursor: default; }
+
+    /* NOTIFY */
     .notify-card {
       margin-top: 18px;
-      background: white;
-      border: 1px solid var(--warm-border);
-      border-radius: 14px;
+      background: white; border: 1px solid var(--warm-border); border-radius: 14px;
       padding: 14px 16px;
       display: flex; align-items: center; gap: 14px;
     }
@@ -545,24 +557,47 @@
     .notify-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; font-weight: 500; }
     .toggle {
       width: 44px; height: 26px;
-      background: #D6D3D1;
-      border-radius: 999px;
-      position: relative;
-      cursor: pointer;
-      transition: background 0.22s;
-      flex-shrink: 0;
+      background: #D6D3D1; border-radius: 999px;
+      position: relative; cursor: pointer;
+      transition: background 0.22s; flex-shrink: 0;
     }
     .toggle::after {
       content: ''; position: absolute;
       top: 3px; left: 3px;
       width: 20px; height: 20px;
-      background: white;
-      border-radius: 50%;
+      background: white; border-radius: 50%;
       box-shadow: 0 2px 4px rgba(0,0,0,0.18);
       transition: left 0.22s;
     }
     .toggle.on { background: var(--bo); }
     .toggle.on::after { left: 21px; }
+
+    /* ALERT BANNER */
+    .alert-banner {
+      position: absolute;
+      top: 14px; left: 50%;
+      transform: translateX(-50%) translateY(-90px);
+      background: white;
+      border: 1px solid var(--warm-border);
+      border-left: 4px solid var(--empty);
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.22);
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
+      z-index: 10000;
+      max-width: min(92%, 420px);
+      transition: transform 0.35s cubic-bezier(.32,.72,0,1);
+      cursor: pointer;
+    }
+    .alert-banner.show { transform: translateX(-50%) translateY(0); }
+    .alert-banner-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: rgba(22,163,74,0.12); color: var(--empty);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .alert-banner-icon svg { width: 17px; height: 17px; }
+    .alert-banner-title { font-size: 13px; font-weight: 800; letter-spacing: -0.2px; }
+    .alert-banner-text { font-size: 11.5px; color: var(--text-secondary); font-weight: 500; margin-top: 1px; }
 
     /* TOAST */
     .toast {
@@ -582,13 +617,43 @@
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast svg { width: 16px; height: 16px; color: #4ADE80; }
 
-    /* LEAFLET TWEAKS */
+    /* ===== TAB BAR ===== */
+    .tab-bar {
+      flex-shrink: 0;
+      height: var(--tab-bar-h);
+      background: white;
+      border-top: 1px solid var(--warm-border);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .tab-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; color: var(--text-tertiary);
+      transition: color 0.15s; padding: 8px 4px;
+      position: relative;
+    }
+    .tab-btn svg { width: 22px; height: 22px; }
+    .tab-btn .tab-label { font-size: 10px; font-weight: 700; letter-spacing: 0.2px; }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active { color: var(--bo); }
+    .tab-btn:focus-visible { outline: 2px solid var(--bo); outline-offset: -4px; border-radius: 10px; }
+    .tab-badge {
+      position: absolute;
+      top: 8px; left: calc(50% + 6px);
+      min-width: 15px; height: 15px;
+      border-radius: 999px;
+      background: var(--bo); color: white;
+      font-size: 9px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px;
+      border: 2px solid white;
+    }
+
     .leaflet-popup-content { font-family: 'Inter', sans-serif !important; margin: 12px 16px; font-size: 13px; }
     .leaflet-popup-content b { color: var(--text); font-weight: 700; }
     .leaflet-popup-content-wrapper { border-radius: 12px !important; box-shadow: 0 12px 30px rgba(0,0,0,0.18) !important; }
     .leaflet-control-zoom a { border-radius: 8px !important; }
 
-    /* MEDIA: desktop tweaks */
     @media (min-width: 700px) {
       .brand h1 { font-size: 30px; }
       .detail-hero { height: 220px; }
@@ -623,7 +688,7 @@
     <div class="view-container">
       <!-- ========== MAP VIEW ========== -->
       <div class="view active" data-view="map">
-        <div class="time-strip">Thursday · 6:00 PM · finals week</div>
+        <div class="time-strip" id="time-strip"></div>
         <div class="filters">
           <button class="filter-pill active" data-filter="all">All spaces</button>
           <button class="filter-pill" data-filter="study">Study</button>
@@ -637,9 +702,7 @@
               <div class="sheet-handle"></div>
             </div>
             <div class="sheet-header" id="sheet-header">
-              <div>
-                <div class="sheet-title">Available now</div>
-              </div>
+              <div><div class="sheet-title">Available now</div></div>
               <div class="sheet-count" id="sheet-count">9 spaces</div>
             </div>
             <div class="sheet-body">
@@ -669,27 +732,30 @@
         <div class="search-results" id="search-results"></div>
       </div>
 
-      <!-- ========== SAVED VIEW (placeholder for Build 2) ========== -->
+      <!-- ========== SAVED VIEW ========== -->
       <div class="view" data-view="saved">
-        <div class="placeholder-view">
-          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-          <h2>No favorites yet</h2>
-          <p>Tap the star on any building's detail page to save it here for quick access.</p>
-        </div>
+        <div class="saved-body" id="saved-body"></div>
       </div>
 
-      <!-- ========== PROFILE VIEW (placeholder for Build 2) ========== -->
+      <!-- ========== PROFILE VIEW ========== -->
       <div class="view" data-view="profile">
-        <div class="placeholder-view">
-          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <h2>Profile & Settings</h2>
-          <p>Notification preferences, data sources, about, and more — coming in the next update.</p>
-        </div>
+        <div class="profile-body" id="profile-body"></div>
       </div>
 
       <!-- ========== DETAIL MODAL ========== -->
       <div class="modal-overlay" id="modal-overlay"></div>
       <div class="detail-modal" id="detail-modal"></div>
+
+      <!-- ALERT BANNER -->
+      <div class="alert-banner" id="alert-banner">
+        <div class="alert-banner-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        </div>
+        <div>
+          <div class="alert-banner-title" id="alert-banner-title"></div>
+          <div class="alert-banner-text" id="alert-banner-text"></div>
+        </div>
+      </div>
 
       <!-- TOAST -->
       <div class="toast" id="toast">
@@ -708,9 +774,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
         <div class="tab-label">Search</div>
       </button>
-      <button class="tab-btn" data-tab="saved">
+      <button class="tab-btn" data-tab="saved" style="position:relative">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
         <div class="tab-label">Saved</div>
+        <div class="tab-badge" id="saved-badge" style="display:none">0</div>
       </button>
       <button class="tab-btn" data-tab="profile">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -719,425 +786,728 @@
     </nav>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script>
-    // ========== ICONS ==========
-    const ICONS = {
-      study:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
-      dining: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
-      gym:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>'
-    };
-    const PIN_ICONS = {
-      study:  '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
-      dining: '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
-      gym:    '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>'
-    };
-    const QUICK_ICONS = {
-      clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-      walk:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="m5 22 5-7 4 4 4-8 4 6"/><path d="m9 11-2 9"/></svg>',
-      users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-      bell:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>'
-    };
+  /* ============================================================
+     UT BUZZ — complete demo build
+     Data model → simulation engine → renderers → interactions
+     All state is in-memory (demo). For production, swap the
+     `state` object for API calls to the Buzz backend.
+     ============================================================ */
 
-    // ========== BUILDINGS ==========
-    const buildings = [
-      { id: 'pcl',     name: 'PCL',       fullName: 'PCL (Main Library)',         type: 'study',  lat: 30.2828, lng: -97.7384, percentFull: 95, hours: '24/5', capacity: 3000 },
-      { id: 'eer',     name: 'EER',       fullName: 'Engineering Library',         type: 'study',  lat: 30.2884, lng: -97.7354, percentFull: 92, hours: '7am–2am', capacity: 600 },
-      { id: 'welch',   name: 'Welch',     fullName: 'Welch Hall',                  type: 'study',  lat: 30.2863, lng: -97.7376, percentFull: 88, hours: '7am–11pm', capacity: 450 },
-      { id: 'sac',     name: 'SAC',       fullName: 'Student Activity Center',     type: 'study',  lat: 30.2849, lng: -97.7367, percentFull: 35, hours: '7am–midnight', capacity: 1200 },
-      { id: 'mccombs', name: 'McCombs',   fullName: 'McCombs School of Business',  type: 'study',  lat: 30.2842, lng: -97.7381, percentFull: 55, hours: '7am–11pm', capacity: 800 },
-      { id: 'j2',      name: 'J2',        fullName: 'J2 Dining',                   type: 'dining', lat: 30.2827, lng: -97.7368, percentFull: 90, hours: '7am–9pm', capacity: 500 },
-      { id: 'jcl',     name: 'JCL',       fullName: 'JCL Dining',                  type: 'dining', lat: 30.2831, lng: -97.7368, percentFull: 25, hours: '7am–8pm', capacity: 400 },
-      { id: 'kins',    name: 'Kinsolving',fullName: 'Kinsolving Dining',           type: 'dining', lat: 30.2902, lng: -97.7397, percentFull: 50, hours: '7am–9pm', capacity: 450 },
-      { id: 'gregory', name: 'Gregory',   fullName: 'Gregory Gymnasium',           type: 'gym',    lat: 30.2840, lng: -97.7364, percentFull: 97, hours: '6am–11pm', capacity: 1500 }
-    ];
+  // ========== ICONS ==========
+  const ICONS = {
+    study:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+    dining: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
+    gym:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>'
+  };
+  const PIN_ICONS = {
+    study:  '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+    dining: '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
+    gym:    '<svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>'
+  };
+  const QUICK_ICONS = {
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    walk:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="m5 22 5-7 4 4 4-8 4 6"/><path d="m9 11-2 9"/></svg>',
+    users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    bell:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+    trendUp:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+    trendDown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>',
+    star:  '<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>',
+    shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>',
+    info:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+    data:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>',
+    chat:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>'
+  };
 
-    // ========== HELPERS ==========
-    const colors = { empty: '#16A34A', moderate: '#EAB308', busy: '#F97316', full: '#DC2626' };
-    function crowdLevel(p) { return p < 30 ? 'empty' : p < 60 ? 'moderate' : p < 85 ? 'busy' : 'full'; }
-    function crowdColor(p) { return colors[crowdLevel(p)]; }
-    function crowdLabel(p) {
-      const l = crowdLevel(p);
-      return l === 'empty' ? 'Empty' : l === 'moderate' ? 'Moderate' : l === 'busy' ? 'Busy' : 'Full';
+  // ========== DATA ==========
+  const buildings = [
+    { id: 'pcl',     name: 'PCL',       fullName: 'PCL (Main Library)',         type: 'study',  lat: 30.2828, lng: -97.7384, base: 95, hours: '24/5', capacity: 3000 },
+    { id: 'eer',     name: 'EER',       fullName: 'Engineering Library',         type: 'study',  lat: 30.2884, lng: -97.7354, base: 92, hours: '7am–2am', capacity: 600 },
+    { id: 'welch',   name: 'Welch',     fullName: 'Welch Hall',                  type: 'study',  lat: 30.2863, lng: -97.7376, base: 88, hours: '7am–11pm', capacity: 450 },
+    { id: 'sac',     name: 'SAC',       fullName: 'Student Activity Center',     type: 'study',  lat: 30.2849, lng: -97.7367, base: 35, hours: '7am–midnight', capacity: 1200 },
+    { id: 'mccombs', name: 'McCombs',   fullName: 'McCombs School of Business',  type: 'study',  lat: 30.2842, lng: -97.7381, base: 55, hours: '7am–11pm', capacity: 800 },
+    { id: 'j2',      name: 'J2',        fullName: 'J2 Dining',                   type: 'dining', lat: 30.2827, lng: -97.7368, base: 90, hours: '7am–9pm', capacity: 500 },
+    { id: 'jcl',     name: 'JCL',       fullName: 'JCL Dining',                  type: 'dining', lat: 30.2831, lng: -97.7368, base: 25, hours: '7am–8pm', capacity: 400 },
+    { id: 'kins',    name: 'Kinsolving',fullName: 'Kinsolving Dining',           type: 'dining', lat: 30.2902, lng: -97.7397, base: 50, hours: '7am–9pm', capacity: 450 },
+    { id: 'gregory', name: 'Gregory',   fullName: 'Gregory Gymnasium',           type: 'gym',    lat: 30.2840, lng: -97.7364, base: 97, hours: '6am–11pm', capacity: 1500 }
+  ];
+  buildings.forEach(b => { b.percentFull = b.base; b.prevPercent = b.base; });
+
+  // Seeded crowdsourced reports (initials, tag, text, minutes ago)
+  const REPORT_TAGS = {
+    seats:   { label: 'Found seats',   bg: 'rgba(22,163,74,0.12)',  color: '#16A34A' },
+    filling: { label: 'Filling up',    bg: 'rgba(234,179,8,0.15)',  color: '#A16207' },
+    packed:  { label: 'Packed',        bg: 'rgba(220,38,38,0.1)',   color: '#DC2626' },
+    line:    { label: 'Short line',    bg: 'rgba(22,163,74,0.12)',  color: '#16A34A' }
+  };
+  const state = {
+    activeFilter: 'all',
+    favorites: new Set(['pcl']),
+    notify: {},           // buildingId -> true
+    notified: {},         // buildingId -> already fired this session
+    reportsPosted: 0,
+    reports: {
+      pcl:     [ {u:'AK', tag:'packed',  text:'Level 3 is completely full, don\u2019t bother', min: 6},
+                 {u:'MG', tag:'seats',   text:'A few open desks on Level 6 by the windows', min: 18},
+                 {u:'JT', tag:'filling', text:'Filling fast after the 5pm classes let out', min: 41} ],
+      eer:     [ {u:'RS', tag:'packed',  text:'Every whiteboard room is taken', min: 12},
+                 {u:'LN', tag:'filling', text:'2nd floor lounge almost full', min: 29} ],
+      welch:   [ {u:'DP', tag:'filling', text:'Atrium tables going quick', min: 22} ],
+      sac:     [ {u:'CV', tag:'seats',   text:'Tons of space on the 2nd floor, super quiet', min: 9},
+                 {u:'BH', tag:'seats',   text:'Ballroom overflow study area just opened', min: 33} ],
+      mccombs: [ {u:'EW', tag:'seats',   text:'Millennium lab half empty rn', min: 15} ],
+      j2:      [ {u:'TQ', tag:'packed',  text:'Line out the door for stir fry', min: 4},
+                 {u:'NA', tag:'filling', text:'Seating upstairs almost gone', min: 16} ],
+      jcl:     [ {u:'KM', tag:'line',    text:'Walked right in, no wait at all', min: 7} ],
+      kins:    [ {u:'SL', tag:'line',    text:'5 min line, moving fast', min: 11} ],
+      gregory: [ {u:'OD', tag:'packed',  text:'All squat racks taken, 20+ min wait', min: 3},
+                 {u:'FR', tag:'packed',  text:'Basketball courts at capacity', min: 25} ]
     }
-    function textColor(p) { return p >= 60 ? '#ffffff' : '#1C1917'; }
-    function typeLabel(t) { return t === 'study' ? 'Study space' : t === 'dining' ? 'Dining hall' : 'Gym'; }
+  };
 
-    // walking time from a hypothetical user point (PCL area) — gives plausible varied numbers
-    const USER_LAT = 30.2845, USER_LNG = -97.7375;
-    function walkMinutes(b) {
-      const dx = (b.lat - USER_LAT) * 364000;  // ft per degree latitude approx
-      const dy = (b.lng - USER_LNG) * 301000;  // ft per degree longitude at this latitude
-      const ft = Math.sqrt(dx*dx + dy*dy);
-      // walking pace ~280 ft/min
-      return Math.max(1, Math.round(ft / 280));
+  // ========== HELPERS ==========
+  const colors = { empty: '#16A34A', moderate: '#EAB308', busy: '#F97316', full: '#DC2626' };
+  function crowdLevel(p) { return p < 30 ? 'empty' : p < 60 ? 'moderate' : p < 85 ? 'busy' : 'full'; }
+  function crowdColor(p) { return colors[crowdLevel(p)]; }
+  function crowdLabel(p) {
+    const l = crowdLevel(p);
+    return l === 'empty' ? 'Empty' : l === 'moderate' ? 'Moderate' : l === 'busy' ? 'Busy' : 'Full';
+  }
+  function textColor(p) { return p >= 60 ? '#ffffff' : '#1C1917'; }
+  function typeLabel(t) { return t === 'study' ? 'Study space' : t === 'dining' ? 'Dining hall' : 'Gym'; }
+  function fmtHour(h) { const hr = h % 24; const ampm = hr < 12 ? 'a' : 'p'; let d = hr % 12; if (d === 0) d = 12; return d + ampm; }
+
+  const USER_LAT = 30.2845, USER_LNG = -97.7375;
+  function walkMinutes(b) {
+    const dx = (b.lat - USER_LAT) * 364000;
+    const dy = (b.lng - USER_LNG) * 301000;
+    return Math.max(1, Math.round(Math.sqrt(dx*dx + dy*dy) / 280));
+  }
+  function hash01(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) & 0xffffffff; }
+    return Math.abs(h % 1000) / 1000;
+  }
+  function nowHour() { return new Date().getHours(); }
+  function relTime(min) {
+    if (min < 1) return 'just now';
+    if (min < 60) return min + 'm ago';
+    return Math.round(min / 60) + 'h ago';
+  }
+
+  // Hourly pattern for a given day-of-week (0=Sun)
+  function hourlyPatternFor(b, dow) {
+    const out = [];
+    const weekendFactor = (dow === 0 || dow === 6) ? (b.type === 'gym' ? 0.85 : 0.55) : 1.0;
+    const peakHours = b.type === 'dining' ? [12, 18] : b.type === 'gym' ? [7, 17, 19] : [14, 19, 21];
+    const baseLevel = b.base * 0.4 * weekendFactor;
+    const peakLevel = b.base * weekendFactor;
+    for (let h = 0; h < 24; h++) {
+      let minDist = 24;
+      peakHours.forEach(p => { const d = Math.min(Math.abs(h - p), 24 - Math.abs(h - p)); if (d < minDist) minDist = d; });
+      const lateDamp = (h < 6 || h > 22) ? 0.15 : 1;
+      const v = (baseLevel + (peakLevel - baseLevel) * Math.exp(-minDist * minDist / 6)) * lateDamp;
+      const noise = (hash01(b.id + dow + 'h' + h) - 0.5) * 8;
+      out.push(Math.max(0, Math.min(100, Math.round(v + noise))));
     }
-
-    // Deterministic hash from string → 0..1
-    function hash01(s) {
-      let h = 0;
-      for (let i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) & 0xffffffff; }
-      return Math.abs(h % 1000) / 1000;
+    return out;
+  }
+  function hourlyPattern(b) { return hourlyPatternFor(b, new Date().getDay()); }
+  function weeklyPattern(b) {
+    const days = [];
+    for (let d = 0; d < 7; d++) days.push(hourlyPatternFor(b, d));
+    return days;
+  }
+  function trend(b) {
+    const pat = hourlyPattern(b);
+    const h = nowHour();
+    const next = pat[(h + 1) % 24];
+    const diff = next - b.percentFull;
+    if (diff > 6) return { dir: 'up', label: 'Filling up', color: colors.busy, icon: QUICK_ICONS.trendUp };
+    if (diff < -6) return { dir: 'down', label: 'Clearing out', color: colors.empty, icon: QUICK_ICONS.trendDown };
+    return { dir: 'flat', label: 'Holding steady', color: '#57534E', icon: QUICK_ICONS.trendUp };
+  }
+  function bestTime(b) {
+    const pat = hourlyPattern(b);
+    const h = nowHour();
+    let best = null, bestV = 101;
+    for (let i = 1; i <= 8; i++) {
+      const hh = (h + i) % 24;
+      if (hh < 7 || hh > 22) continue;
+      if (pat[hh] < bestV) { bestV = pat[hh]; best = hh; }
     }
+    if (best === null) return { label: 'Tomorrow AM', value: '' };
+    return { label: fmtHour(best) + 'm today', value: '~' + bestV + '% full' };
+  }
+  function alternatives(b) {
+    return buildings
+      .filter(x => x.id !== b.id && x.type === b.type && x.percentFull < b.percentFull - 10)
+      .map(x => ({ ...x, score: x.percentFull * 0.7 + walkMinutes(x) * 5 }))
+      .sort((a, c) => a.score - c.score)
+      .slice(0, 3);
+  }
+  function shade(hex, amt) {
+    const h = hex.replace('#', '');
+    let r = parseInt(h.substring(0,2), 16), g = parseInt(h.substring(2,4), 16), bl = parseInt(h.substring(4,6), 16);
+    r = Math.max(0, Math.min(255, r + amt)); g = Math.max(0, Math.min(255, g + amt)); bl = Math.max(0, Math.min(255, bl + amt));
+    return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + bl.toString(16).padStart(2,'0');
+  }
 
-    // Generate hourly pattern (24 values) for today, peaking at typical busy times based on building type
-    function hourlyPattern(b) {
-      const out = [];
-      const peakHours = b.type === 'dining' ? [12, 18] : b.type === 'gym' ? [7, 17, 19] : [14, 19, 21];
-      const baseLevel = b.percentFull * 0.4;
-      const peakLevel = b.percentFull;
-      for (let h = 0; h < 24; h++) {
-        // closest peak distance
-        let minDist = 24;
-        peakHours.forEach(p => { const d = Math.min(Math.abs(h - p), 24 - Math.abs(h - p)); if (d < minDist) minDist = d; });
-        // late-night dampening (most buildings closed/quiet)
-        const lateDamp = (h < 6 || h > 22) ? 0.15 : 1;
-        const v = (baseLevel + (peakLevel - baseLevel) * Math.exp(-minDist * minDist / 6)) * lateDamp;
-        // add small deterministic noise
-        const noise = (hash01(b.id + h) - 0.5) * 8;
-        out.push(Math.max(0, Math.min(100, Math.round(v + noise))));
-      }
-      return out;
-    }
+  // ========== TIME STRIP ==========
+  function renderTimeStrip() {
+    const d = new Date();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    let h = d.getHours(), m = d.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    let hd = h % 12; if (hd === 0) hd = 12;
+    document.getElementById('time-strip').textContent =
+      days[d.getDay()] + ' \u00B7 ' + hd + ':' + String(m).padStart(2,'0') + ' ' + ampm + ' \u00B7 updated live';
+  }
+  renderTimeStrip();
+  setInterval(renderTimeStrip, 30000);
 
-    // Generate weekly pattern: 7 days × 24 hours
-    function weeklyPattern(b) {
-      const days = [];
-      for (let d = 0; d < 7; d++) {
-        const row = [];
-        // weekend dampening for academic spaces; gyms slightly busier on weekend mornings
-        const weekendFactor = (d === 0 || d === 6)
-          ? (b.type === 'gym' ? 0.85 : 0.55)
-          : 1.0;
-        const peakHours = b.type === 'dining' ? [12, 18] : b.type === 'gym' ? [7, 17, 19] : [14, 19, 21];
-        const baseLevel = b.percentFull * 0.4 * weekendFactor;
-        const peakLevel = b.percentFull * weekendFactor;
-        for (let h = 0; h < 24; h++) {
-          let minDist = 24;
-          peakHours.forEach(p => { const dist = Math.min(Math.abs(h - p), 24 - Math.abs(h - p)); if (dist < minDist) minDist = dist; });
-          const lateDamp = (h < 6 || h > 22) ? 0.15 : 1;
-          const v = (baseLevel + (peakLevel - baseLevel) * Math.exp(-minDist * minDist / 6)) * lateDamp;
-          const noise = (hash01(b.id + d + 'd' + h) - 0.5) * 10;
-          row.push(Math.max(0, Math.min(100, Math.round(v + noise))));
-        }
-        days.push(row);
-      }
-      return days;
-    }
+  // ========== MAP ==========
+  const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([30.2862, -97.7378], 16);
+  L.control.zoom({ position: 'topright' }).addTo(map);
+  L.control.attribution({ position: 'bottomleft', prefix: false }).addAttribution('\u00A9 OpenStreetMap').addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-    // Find best alternatives: same type, lower crowd %, sorted by combined (low % + close distance)
-    function alternatives(b) {
-      return buildings
-        .filter(x => x.id !== b.id && x.type === b.type && x.percentFull < b.percentFull - 10)
-        .map(x => ({ ...x, score: x.percentFull * 0.7 + walkMinutes(x) * 5 }))
-        .sort((a, c) => a.score - c.score)
-        .slice(0, 3);
-    }
-
-    // ========== MAP SETUP ==========
-    const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([30.2862, -97.7378], 16);
-    L.control.zoom({ position: 'topright' }).addTo(map);
-    L.control.attribution({ position: 'bottomleft', prefix: false }).addAttribution('© OpenStreetMap').addTo(map);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-
-    const markersById = {};
-    buildings.forEach(b => {
-      const bg = crowdColor(b.percentFull);
-      const fg = textColor(b.percentFull);
-      const pinIcon = PIN_ICONS[b.type] || '';
-      const html =
-        '<div class="map-pin-wrap">' +
-          '<div class="map-pin" style="background:' + bg + '; color:' + fg + '">' +
-            '<div class="name-row">' + pinIcon + '<span>' + b.name + '</span></div>' +
-            '<span class="pct">' + b.percentFull + '%</span>' +
-          '</div>' +
-        '</div>';
-      const icon = L.divIcon({ className: '', html: html, iconSize: [82, 60], iconAnchor: [41, 56] });
-      const marker = L.marker([b.lat, b.lng], { icon: icon }).addTo(map);
-      marker.on('click', () => openDetail(b.id));
-      markersById[b.id] = marker;
-    });
-
-    // ========== BUILDING LIST ==========
-    const listEl = document.getElementById('building-list');
-    const sheetCountEl = document.getElementById('sheet-count');
-    let activeFilter = 'all';
-
-    function buildingCardHTML(b) {
-      const color = crowdColor(b.percentFull);
-      return '<div class="building-card" data-id="' + b.id + '">' +
-        '<div class="building-icon" style="background:' + color + '">' + (ICONS[b.type] || '') + '</div>' +
-        '<div class="building-info">' +
-          '<div class="building-name">' + b.fullName + '</div>' +
-          '<div class="building-meta">' + typeLabel(b.type) + '<span class="dot"></span>' + walkMinutes(b) + ' min walk</div>' +
-        '</div>' +
-        '<div class="building-right">' +
-          '<div class="building-percent" style="color:' + color + '">' + b.percentFull + '%</div>' +
-          '<div class="building-status" style="color:' + color + '">' + crowdLabel(b.percentFull) + '</div>' +
+  const markersById = {};
+  function pinHTML(b) {
+    const bg = crowdColor(b.percentFull);
+    const fg = textColor(b.percentFull);
+    return '<div class="map-pin-wrap">' +
+        '<div class="map-pin" style="background:' + bg + '; color:' + fg + '">' +
+          '<div class="name-row">' + (PIN_ICONS[b.type] || '') + '<span>' + b.name + '</span></div>' +
+          '<span class="pct">' + b.percentFull + '%</span>' +
         '</div>' +
       '</div>';
-    }
+  }
+  buildings.forEach(b => {
+    const icon = L.divIcon({ className: '', html: pinHTML(b), iconSize: [82, 60], iconAnchor: [41, 56] });
+    const marker = L.marker([b.lat, b.lng], { icon }).addTo(map);
+    marker.on('click', () => openDetail(b.id));
+    markersById[b.id] = marker;
+  });
+  function refreshPin(b) {
+    markersById[b.id].setIcon(L.divIcon({ className: '', html: pinHTML(b), iconSize: [82, 60], iconAnchor: [41, 56] }));
+  }
 
-    function renderList() {
-      const list = buildings
-        .filter(b => activeFilter === 'all' || b.type === activeFilter)
-        .sort((a, b) => a.percentFull - b.percentFull);
-      listEl.innerHTML = list.map(buildingCardHTML).join('');
-      sheetCountEl.textContent = list.length + ' ' + (list.length === 1 ? 'space' : 'spaces');
-      // attach click handlers
-      listEl.querySelectorAll('.building-card').forEach(el => {
-        el.addEventListener('click', () => openDetail(el.dataset.id));
-      });
-    }
-    renderList();
+  // ========== BUILDING CARDS ==========
+  function buildingCardHTML(b) {
+    const color = crowdColor(b.percentFull);
+    const t = trend(b);
+    const fav = state.favorites.has(b.id)
+      ? '<svg class="fav-star-inline" viewBox="0 0 24 24" fill="currentColor"><path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>'
+      : '';
+    return '<div class="building-card" data-id="' + b.id + '">' +
+      '<div class="building-icon" style="background:' + color + '">' + (ICONS[b.type] || '') + '</div>' +
+      '<div class="building-info">' +
+        '<div class="building-name">' + b.fullName + fav + '</div>' +
+        '<div class="building-meta">' + typeLabel(b.type) + '<span class="dot"></span>' + walkMinutes(b) + ' min walk' +
+          '<span class="dot"></span><span class="trend-chip" style="color:' + t.color + '">' + t.icon + t.label + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="building-right">' +
+        '<div class="building-percent" style="color:' + color + '">' + b.percentFull + '%</div>' +
+        '<div class="building-status" style="color:' + color + '">' + crowdLabel(b.percentFull) + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  function attachCardClicks(container) {
+    container.querySelectorAll('.building-card').forEach(el => {
+      el.addEventListener('click', () => openDetail(el.dataset.id));
+    });
+  }
 
-    // ========== FILTERS ==========
-    document.querySelectorAll('.filter-pill').forEach(pill => {
-      pill.addEventListener('click', () => {
-        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        activeFilter = pill.dataset.filter;
-        renderList();
-        buildings.forEach(b => {
-          const show = activeFilter === 'all' || b.type === activeFilter;
-          if (show && !map.hasLayer(markersById[b.id])) markersById[b.id].addTo(map);
-          if (!show && map.hasLayer(markersById[b.id])) map.removeLayer(markersById[b.id]);
-        });
+  // ========== MAP LIST ==========
+  const listEl = document.getElementById('building-list');
+  const sheetCountEl = document.getElementById('sheet-count');
+  function renderList() {
+    const list = buildings
+      .filter(b => state.activeFilter === 'all' || b.type === state.activeFilter)
+      .sort((a, b) => a.percentFull - b.percentFull);
+    listEl.innerHTML = list.map(buildingCardHTML).join('');
+    sheetCountEl.textContent = list.length + ' ' + (list.length === 1 ? 'space' : 'spaces');
+    attachCardClicks(listEl);
+  }
+  renderList();
+
+  // ========== FILTERS ==========
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      state.activeFilter = pill.dataset.filter;
+      renderList();
+      buildings.forEach(b => {
+        const show = state.activeFilter === 'all' || b.type === state.activeFilter;
+        if (show && !map.hasLayer(markersById[b.id])) markersById[b.id].addTo(map);
+        if (!show && map.hasLayer(markersById[b.id])) map.removeLayer(markersById[b.id]);
       });
     });
+  });
 
-    // ========== BOTTOM SHEET ==========
-    const sheet = document.getElementById('sheet');
-    const sheetHandleArea = document.getElementById('sheet-handle-area');
-    const sheetHeader = document.getElementById('sheet-header');
-    function toggleSheet() {
-      sheet.classList.toggle('collapsed');
-      sheet.classList.toggle('expanded');
-      // give the map a beat then invalidate size so it lays out correctly
-      setTimeout(() => map.invalidateSize(), 340);
-    }
-    sheetHandleArea.addEventListener('click', toggleSheet);
-    sheetHeader.addEventListener('click', toggleSheet);
+  // ========== SHEET ==========
+  const sheet = document.getElementById('sheet');
+  function toggleSheet() {
+    sheet.classList.toggle('collapsed');
+    sheet.classList.toggle('expanded');
+    setTimeout(() => map.invalidateSize(), 340);
+  }
+  document.getElementById('sheet-handle-area').addEventListener('click', toggleSheet);
+  document.getElementById('sheet-header').addEventListener('click', toggleSheet);
 
-    // ========== TABS ==========
-    const views = document.querySelectorAll('.view');
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.dataset.tab;
-        tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-        views.forEach(v => v.classList.toggle('active', v.dataset.view === tab));
-        if (tab === 'map') setTimeout(() => map.invalidateSize(), 50);
-        if (tab === 'search') setTimeout(() => document.getElementById('search-input').focus(), 50);
-      });
+  // ========== TABS ==========
+  const views = document.querySelectorAll('.view');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      views.forEach(v => v.classList.toggle('active', v.dataset.view === tab));
+      if (tab === 'map') setTimeout(() => map.invalidateSize(), 50);
+      if (tab === 'search') setTimeout(() => document.getElementById('search-input').focus(), 50);
+      if (tab === 'saved') renderSaved();
+      if (tab === 'profile') renderProfile();
     });
+  });
 
-    // ========== SEARCH ==========
-    const searchInput = document.getElementById('search-input');
-    const searchResults = document.getElementById('search-results');
-    const searchClear = document.getElementById('search-clear');
-
-    function renderSearch(query) {
-      const q = (query || '').trim().toLowerCase();
-      if (!q) {
+  // ========== SEARCH ==========
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+  const searchClear = document.getElementById('search-clear');
+  function renderSearch(query) {
+    const q = (query || '').trim().toLowerCase();
+    if (!q) {
+      searchResults.innerHTML =
+        '<div class="search-section-label">All spaces</div>' +
+        '<div class="building-list">' +
+          buildings.slice().sort((a,b)=>a.percentFull-b.percentFull).map(buildingCardHTML).join('') +
+        '</div>';
+    } else {
+      const matches = buildings.filter(b =>
+        b.name.toLowerCase().includes(q) ||
+        b.fullName.toLowerCase().includes(q) ||
+        b.type.toLowerCase().includes(q) ||
+        typeLabel(b.type).toLowerCase().includes(q)
+      );
+      if (matches.length === 0) {
         searchResults.innerHTML =
-          '<div class="search-section-label">All spaces</div>' +
-          '<div class="building-list">' +
-            buildings.slice().sort((a,b)=>a.percentFull-b.percentFull).map(buildingCardHTML).join('') +
+          '<div class="empty-state">' +
+            '<svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' +
+            '<div class="empty-state-title">No spaces match \u201C' + q + '\u201D</div>' +
+            '<div class="empty-state-text">Try searching for \u201CPCL\u201D, \u201Cgym\u201D, or \u201Cdining\u201D.</div>' +
           '</div>';
       } else {
-        const matches = buildings.filter(b =>
-          b.name.toLowerCase().includes(q) ||
-          b.fullName.toLowerCase().includes(q) ||
-          b.type.toLowerCase().includes(q) ||
-          typeLabel(b.type).toLowerCase().includes(q)
-        );
-        if (matches.length === 0) {
-          searchResults.innerHTML =
-            '<div class="empty-state">' +
-              '<svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' +
-              '<div class="empty-state-title">No spaces match "' + q + '"</div>' +
-              '<div class="empty-state-text">Try searching for "PCL", "gym", or "dining".</div>' +
-            '</div>';
-        } else {
-          searchResults.innerHTML =
-            '<div class="search-section-label">' + matches.length + ' result' + (matches.length === 1 ? '' : 's') + '</div>' +
-            '<div class="building-list">' +
-              matches.map(buildingCardHTML).join('') +
-            '</div>';
-        }
+        searchResults.innerHTML =
+          '<div class="search-section-label">' + matches.length + ' result' + (matches.length === 1 ? '' : 's') + '</div>' +
+          '<div class="building-list">' + matches.map(buildingCardHTML).join('') + '</div>';
       }
-      searchResults.querySelectorAll('.building-card').forEach(el => {
-        el.addEventListener('click', () => openDetail(el.dataset.id));
-      });
     }
+    attachCardClicks(searchResults);
+  }
+  renderSearch('');
+  searchInput.addEventListener('input', e => {
+    renderSearch(e.target.value);
+    searchClear.classList.toggle('visible', e.target.value.length > 0);
+  });
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchClear.classList.remove('visible');
     renderSearch('');
-    searchInput.addEventListener('input', e => {
-      renderSearch(e.target.value);
-      searchClear.classList.toggle('visible', e.target.value.length > 0);
-    });
-    searchClear.addEventListener('click', () => {
-      searchInput.value = '';
-      searchClear.classList.remove('visible');
-      renderSearch('');
-      searchInput.focus();
-    });
+    searchInput.focus();
+  });
 
-    // ========== BUILDING DETAIL MODAL ==========
-    const modalOverlay = document.getElementById('modal-overlay');
-    const detailModal = document.getElementById('detail-modal');
-    let notifyState = {};   // {buildingId: true/false}
-
-    function detailHTML(b) {
-      const color = crowdColor(b.percentFull);
-      const hourly = hourlyPattern(b);
-      const nowHour = 18; // matches "Thursday 6PM" framing
-      const weekly = weeklyPattern(b);
-      const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      const alts = alternatives(b);
-      const isOn = !!notifyState[b.id];
-
-      const hourlyBarsHTML = hourly.map((v, h) =>
-        '<div class="hourly-bar' + (h === nowHour ? ' now' : '') + '" style="height:' + Math.max(4, v) + '%; background:' + crowdColor(v) + '" title="' + h + ':00 — ' + v + '%"></div>'
-      ).join('');
-
-      const heatmapHTML = weekly.map((row, d) =>
-        '<div class="heatmap-row">' +
-          '<div class="heatmap-day-label">' + dayNames[d] + '</div>' +
-          row.map(v => '<div class="heatmap-cell" style="background:' + crowdColor(v) + '; opacity:' + (0.35 + v/150) + '"></div>').join('') +
-        '</div>'
-      ).join('') +
-      '<div class="heatmap-hour-row">' +
-        '<span></span>' +
-        '<span class="heatmap-hour-label">12a</span>' +
-        '<span class="heatmap-hour-label">6a</span>' +
-        '<span class="heatmap-hour-label">12p</span>' +
-        '<span class="heatmap-hour-label">6p</span>' +
+  // ========== SAVED ==========
+  function updateSavedBadge() {
+    const badge = document.getElementById('saved-badge');
+    const n = state.favorites.size;
+    badge.style.display = n > 0 ? 'flex' : 'none';
+    badge.textContent = n;
+  }
+  function renderSaved() {
+    const body = document.getElementById('saved-body');
+    const favs = buildings.filter(b => state.favorites.has(b.id)).sort((a,b)=>a.percentFull-b.percentFull);
+    if (favs.length === 0) {
+      body.innerHTML =
+        '<div class="placeholder-view" style="padding-top:80px">' +
+          '<svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>' +
+          '<h2>No favorites yet</h2>' +
+          '<p>Tap the star on any building\u2019s detail page to save it here for quick access.</p>' +
+        '</div>';
+      return;
+    }
+    body.innerHTML =
+      '<div class="search-section-label">Your spaces \u00B7 sorted by availability</div>' +
+      '<div class="building-list">' + favs.map(buildingCardHTML).join('') + '</div>' +
+      '<div class="search-section-label" style="margin-top:8px">Suggested for you</div>' +
+      '<div class="building-list">' +
+        buildings.filter(b => !state.favorites.has(b.id) && b.percentFull < 50).slice(0,2).map(buildingCardHTML).join('') +
       '</div>';
+    attachCardClicks(body);
+  }
+  updateSavedBadge();
 
-      const altsHTML = alts.length === 0
-        ? '<div style="background:white; border:1px solid var(--warm-border); border-radius:12px; padding:14px; text-align:center; font-size:12px; color:var(--text-secondary)">No nearby alternatives in this category — try a different space type.</div>'
-        : alts.map(a => {
-          const ac = crowdColor(a.percentFull);
-          return '<div class="alt-card" data-id="' + a.id + '">' +
-            '<div class="alt-icon" style="background:' + ac + '">' + (ICONS[a.type] || '') + '</div>' +
-            '<div class="alt-info">' +
-              '<div class="alt-name">' + a.fullName + '</div>' +
-              '<div class="alt-meta">' + walkMinutes(a) + ' min walk · ' + crowdLabel(a.percentFull) + '</div>' +
+  // ========== PROFILE ==========
+  function renderProfile() {
+    const body = document.getElementById('profile-body');
+    const alerts = buildings.filter(b => state.notify[b.id]);
+    const alertsHTML = alerts.length === 0
+      ? '<div class="settings-row"><div class="settings-row-main"><div class="settings-row-desc">No active alerts. Turn one on from any building\u2019s page and Buzz will tell you the moment it opens up.</div></div></div>'
+      : alerts.map(b =>
+          '<div class="settings-row">' +
+            '<div class="settings-row-icon">' + QUICK_ICONS.bell + '</div>' +
+            '<div class="settings-row-main">' +
+              '<div class="settings-row-title">' + b.fullName + '</div>' +
+              '<div class="settings-row-desc">Alert when below 50% \u00B7 currently ' + b.percentFull + '%</div>' +
             '</div>' +
-            '<div class="alt-percent" style="color:' + ac + '">' + a.percentFull + '%</div>' +
-          '</div>';
-        }).join('');
+            '<button class="alert-remove" data-id="' + b.id + '">Remove</button>' +
+          '</div>'
+        ).join('');
 
-      return '' +
-        '<div class="detail-hero">' +
-          '<div class="detail-hero-bg" style="background: linear-gradient(135deg, ' + color + ' 0%, ' + shade(color, -25) + ' 100%);"></div>' +
-          '<div class="detail-hero-icon">' + ICONS[b.type] + '</div>' +
-          '<button class="detail-close" id="detail-close-btn" aria-label="Close">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
-          '</button>' +
-          '<div class="detail-hero-content">' +
-            '<div class="detail-type-pill">' + PIN_ICONS[b.type] + typeLabel(b.type) + '</div>' +
-            '<div class="detail-name">' + b.fullName + '</div>' +
+    body.innerHTML =
+      '<div class="profile-hero">' +
+        '<div class="profile-avatar">SW</div>' +
+        '<div>' +
+          '<div class="profile-hero-name">Steven W.</div>' +
+          '<div class="profile-hero-sub">Cockrell School \u00B7 ECE \u00B7 Class of 2029</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="profile-stats">' +
+        '<div class="profile-stat"><div class="profile-stat-value">' + state.favorites.size + '</div><div class="profile-stat-label">Saved spaces</div></div>' +
+        '<div class="profile-stat"><div class="profile-stat-value">' + Object.values(state.notify).filter(Boolean).length + '</div><div class="profile-stat-label">Active alerts</div></div>' +
+        '<div class="profile-stat"><div class="profile-stat-value">' + state.reportsPosted + '</div><div class="profile-stat-label">Reports posted</div></div>' +
+      '</div>' +
+      '<div class="settings-group">' +
+        '<div class="settings-group-title">Alerts</div>' + alertsHTML +
+      '</div>' +
+      '<div class="settings-group">' +
+        '<div class="settings-group-title">Data & privacy</div>' +
+        '<div class="settings-row">' +
+          '<div class="settings-row-icon">' + QUICK_ICONS.shield + '</div>' +
+          '<div class="settings-row-main">' +
+            '<div class="settings-row-title">No personal data collected</div>' +
+            '<div class="settings-row-desc">Buzz shows building-level counts only. Nothing you do is tied to your identity, and raw sensor data is purged every 30 days.</div>' +
           '</div>' +
         '</div>' +
-        '<div class="detail-body">' +
-          '<div class="status-row">' +
-            '<div class="status-bar-area">' +
-              '<div class="status-label">Right now</div>' +
-              '<div class="status-bar-bg"><div class="status-bar-fill" style="width:' + b.percentFull + '%; background:' + color + '"></div></div>' +
-            '</div>' +
-            '<div style="text-align:right">' +
-              '<div class="status-percent" style="color:' + color + '">' + b.percentFull + '%</div>' +
-              '<div class="status-percent-label" style="color:' + color + '">' + crowdLabel(b.percentFull) + '</div>' +
-            '</div>' +
+        '<div class="settings-row">' +
+          '<div class="settings-row-icon">' + QUICK_ICONS.data + '</div>' +
+          '<div class="settings-row-main">' +
+            '<div class="settings-row-title">Where the numbers come from</div>' +
+            '<div class="settings-row-desc">Anonymous door counters, aggregated card-swipe totals from UT Facilities, and reports from students like you.</div>' +
           '</div>' +
-          '<div class="quick-facts">' +
-            '<div class="quick-fact">' +
-              QUICK_ICONS.clock +
-              '<div class="quick-fact-value">' + b.hours + '</div>' +
-              '<div class="quick-fact-label">Hours</div>' +
-            '</div>' +
-            '<div class="quick-fact">' +
-              QUICK_ICONS.walk +
-              '<div class="quick-fact-value">' + walkMinutes(b) + ' min</div>' +
-              '<div class="quick-fact-label">Walk</div>' +
-            '</div>' +
-            '<div class="quick-fact">' +
-              QUICK_ICONS.users +
-              '<div class="quick-fact-value">' + Math.round(b.capacity * b.percentFull/100).toLocaleString() + '</div>' +
-              '<div class="quick-fact-label">Of ' + b.capacity.toLocaleString() + '</div>' +
-            '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="settings-group">' +
+        '<div class="settings-group-title">About</div>' +
+        '<div class="about-text">Buzz is a student-built project for the UT Austin community. It exists to answer one question: <b>where can I actually get a seat right now?</b><br><br>Version 0.9 (pilot demo) \u00B7 Built by Steven Wimberly, Cockrell School of Engineering.</div>' +
+      '</div>';
+
+    body.querySelectorAll('.alert-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.notify[btn.dataset.id] = false;
+        renderProfile();
+        showToast('Alert removed');
+      });
+    });
+  }
+
+  // ========== DETAIL MODAL ==========
+  const modalOverlay = document.getElementById('modal-overlay');
+  const detailModal = document.getElementById('detail-modal');
+  let openBuildingId = null;
+  let composeTag = null;
+
+  function reportsHTML(b) {
+    const reps = state.reports[b.id] || [];
+    if (reps.length === 0) return '<div class="report-card"><div class="report-main"><div class="report-text" style="margin-top:0;color:var(--text-secondary)">No reports yet \u2014 be the first to post one.</div></div></div>';
+    return reps.map(rp => {
+      const tag = REPORT_TAGS[rp.tag];
+      return '<div class="report-card">' +
+        '<div class="report-avatar">' + rp.u + '</div>' +
+        '<div class="report-main">' +
+          '<div class="report-top">' +
+            '<span class="report-tag" style="background:' + tag.bg + ';color:' + tag.color + '">' + tag.label + '</span>' +
+            '<span class="report-time">' + relTime(rp.min) + '</span>' +
           '</div>' +
-          '<div class="section-h">Today\'s busyness <span class="h-meta">by hour</span></div>' +
-          '<div class="hourly-chart">' +
-            '<div class="hourly-bars">' + hourlyBarsHTML + '</div>' +
-            '<div class="hourly-labels"><span>12a</span><span>6a</span><span>12p</span><span>6p</span><span>11p</span></div>' +
+          (rp.text ? '<div class="report-text">' + rp.text + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function detailHTML(b) {
+    const color = crowdColor(b.percentFull);
+    const hourly = hourlyPattern(b);
+    const nh = nowHour();
+    const weekly = weeklyPattern(b);
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const alts = alternatives(b);
+    const isOn = !!state.notify[b.id];
+    const isFav = state.favorites.has(b.id);
+    const t = trend(b);
+    const bt = bestTime(b);
+
+    const hourlyBarsHTML = hourly.map((v, h) =>
+      '<div class="hourly-bar' + (h === nh ? ' now' : '') + '" style="height:' + Math.max(4, v) + '%; background:' + crowdColor(v) + '" title="' + fmtHour(h) + 'm \u2014 ' + v + '%"></div>'
+    ).join('');
+
+    const heatmapHTML = weekly.map((row, d) =>
+      '<div class="heatmap-row">' +
+        '<div class="heatmap-day-label">' + dayNames[d] + '</div>' +
+        row.map(v => '<div class="heatmap-cell" style="background:' + crowdColor(v) + '; opacity:' + (0.35 + v/150) + '"></div>').join('') +
+      '</div>'
+    ).join('') +
+    '<div class="heatmap-hour-row">' +
+      '<span></span>' +
+      '<span class="heatmap-hour-label">12a</span>' +
+      '<span class="heatmap-hour-label">6a</span>' +
+      '<span class="heatmap-hour-label">12p</span>' +
+      '<span class="heatmap-hour-label">6p</span>' +
+    '</div>';
+
+    const altsHTML = alts.length === 0
+      ? '<div style="background:white; border:1px solid var(--warm-border); border-radius:12px; padding:14px; text-align:center; font-size:12px; color:var(--text-secondary)">No nearby alternatives in this category \u2014 try a different space type.</div>'
+      : alts.map(a => {
+        const ac = crowdColor(a.percentFull);
+        return '<div class="alt-card" data-id="' + a.id + '">' +
+          '<div class="alt-icon" style="background:' + ac + '">' + (ICONS[a.type] || '') + '</div>' +
+          '<div class="alt-info">' +
+            '<div class="alt-name">' + a.fullName + '</div>' +
+            '<div class="alt-meta">' + walkMinutes(a) + ' min walk \u00B7 ' + crowdLabel(a.percentFull) + '</div>' +
           '</div>' +
-          '<div class="section-h">Typical week <span class="h-meta">avg by day & hour</span></div>' +
-          '<div class="heatmap">' + heatmapHTML + '</div>' +
-          '<div class="section-h">Try instead</div>' +
-          '<div class="alternatives">' + altsHTML + '</div>' +
-          '<div class="notify-card">' +
-            '<div class="notify-icon-wrap">' + QUICK_ICONS.bell + '</div>' +
-            '<div class="notify-info">' +
-              '<div class="notify-title">Notify when below 50%</div>' +
-              '<div class="notify-desc">We\'ll ping you when ' + b.name + ' opens up</div>' +
-            '</div>' +
-            '<div class="toggle' + (isOn ? ' on' : '') + '" id="notify-toggle"></div>' +
-          '</div>' +
+          '<div class="alt-percent" style="color:' + ac + '">' + a.percentFull + '%</div>' +
         '</div>';
-    }
+      }).join('');
 
-    // Lighten/darken hex color
-    function shade(hex, amt) {
-      const h = hex.replace('#', '');
-      let r = parseInt(h.substring(0,2), 16);
-      let g = parseInt(h.substring(2,4), 16);
-      let bl = parseInt(h.substring(4,6), 16);
-      r = Math.max(0, Math.min(255, r + amt));
-      g = Math.max(0, Math.min(255, g + amt));
-      bl = Math.max(0, Math.min(255, bl + amt));
-      return '#' + r.toString(16).padStart(2,'0') + g.toString(16).padStart(2,'0') + bl.toString(16).padStart(2,'0');
-    }
+    return '' +
+      '<div class="detail-hero">' +
+        '<div class="detail-hero-bg" style="background: linear-gradient(135deg, ' + color + ' 0%, ' + shade(color, -25) + ' 100%);"></div>' +
+        '<div class="detail-hero-icon">' + ICONS[b.type] + '</div>' +
+        '<button class="detail-close" id="detail-close-btn" aria-label="Close">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+        '</button>' +
+        '<button class="detail-fav' + (isFav ? ' faved' : '') + '" id="detail-fav-btn" aria-label="Save to favorites">' + QUICK_ICONS.star + '</button>' +
+        '<div class="detail-hero-content">' +
+          '<div class="detail-type-pill">' + PIN_ICONS[b.type] + typeLabel(b.type) + '</div>' +
+          '<div class="detail-name">' + b.fullName + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="detail-body">' +
+        '<div class="status-row">' +
+          '<div class="status-bar-area">' +
+            '<div class="status-label">Right now</div>' +
+            '<div class="status-bar-bg"><div class="status-bar-fill" id="detail-bar" style="width:' + b.percentFull + '%; background:' + color + '"></div></div>' +
+          '</div>' +
+          '<div style="text-align:right">' +
+            '<div class="status-percent" id="detail-pct" style="color:' + color + '">' + b.percentFull + '%</div>' +
+            '<div class="status-percent-label" id="detail-pct-label" style="color:' + color + '">' + crowdLabel(b.percentFull) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="forecast-strip">' +
+          '<div class="forecast-card">' +
+            '<div class="forecast-icon" style="background:' + t.color + '">' + t.icon + '</div>' +
+            '<div><div class="forecast-value">' + t.label + '</div><div class="forecast-label">Next hour</div></div>' +
+          '</div>' +
+          '<div class="forecast-card">' +
+            '<div class="forecast-icon" style="background:var(--bo)">' + QUICK_ICONS.clock + '</div>' +
+            '<div><div class="forecast-value">' + bt.label + '</div><div class="forecast-label">Best time to go ' + (bt.value ? '\u00B7 ' + bt.value : '') + '</div></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="quick-facts">' +
+          '<div class="quick-fact">' + QUICK_ICONS.clock + '<div class="quick-fact-value">' + b.hours + '</div><div class="quick-fact-label">Hours</div></div>' +
+          '<div class="quick-fact">' + QUICK_ICONS.walk + '<div class="quick-fact-value">' + walkMinutes(b) + ' min</div><div class="quick-fact-label">Walk</div></div>' +
+          '<div class="quick-fact">' + QUICK_ICONS.users + '<div class="quick-fact-value" id="detail-count">' + Math.round(b.capacity * b.percentFull/100).toLocaleString() + '</div><div class="quick-fact-label">Of ' + b.capacity.toLocaleString() + '</div></div>' +
+        '</div>' +
+        '<div class="section-h">Buzz reports <span class="h-meta">from students here now</span></div>' +
+        '<div class="reports-feed" id="reports-feed">' + reportsHTML(b) + '</div>' +
+        '<div class="report-compose">' +
+          '<div class="report-compose-title">What\u2019s it like right now?</div>' +
+          '<div class="report-chips" id="report-chips">' +
+            Object.keys(REPORT_TAGS).map(k => '<button class="report-chip" data-tag="' + k + '">' + REPORT_TAGS[k].label + '</button>').join('') +
+          '</div>' +
+          '<div class="report-input-row">' +
+            '<input class="report-input" id="report-input" maxlength="90" placeholder="Add a detail (optional)\u2026" />' +
+            '<button class="report-send" id="report-send" disabled>Post</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="section-h">Today\u2019s busyness <span class="h-meta">by hour</span></div>' +
+        '<div class="hourly-chart">' +
+          '<div class="hourly-bars">' + hourlyBarsHTML + '</div>' +
+          '<div class="hourly-labels"><span>12a</span><span>6a</span><span>12p</span><span>6p</span><span>11p</span></div>' +
+        '</div>' +
+        '<div class="section-h">Typical week <span class="h-meta">avg by day & hour</span></div>' +
+        '<div class="heatmap">' + heatmapHTML + '</div>' +
+        '<div class="section-h">Try instead</div>' +
+        '<div class="alternatives">' + altsHTML + '</div>' +
+        '<div class="notify-card">' +
+          '<div class="notify-icon-wrap">' + QUICK_ICONS.bell + '</div>' +
+          '<div class="notify-info">' +
+            '<div class="notify-title">Notify when below 50%</div>' +
+            '<div class="notify-desc">We\u2019ll ping you when ' + b.name + ' opens up</div>' +
+          '</div>' +
+          '<div class="toggle' + (isOn ? ' on' : '') + '" id="notify-toggle" role="switch" aria-checked="' + isOn + '"></div>' +
+        '</div>' +
+      '</div>';
+  }
 
-    function openDetail(buildingId) {
-      const b = buildings.find(x => x.id === buildingId);
-      if (!b) return;
-      detailModal.innerHTML = detailHTML(b);
-      modalOverlay.classList.add('show');
-      // double-rAF so the transform transition actually plays
-      requestAnimationFrame(() => requestAnimationFrame(() => detailModal.classList.add('show')));
-      // wire up close + notify + alternatives
-      detailModal.querySelector('#detail-close-btn').addEventListener('click', closeDetail);
-      const tog = detailModal.querySelector('#notify-toggle');
-      tog.addEventListener('click', () => {
-        notifyState[b.id] = !notifyState[b.id];
-        tog.classList.toggle('on', notifyState[b.id]);
-        showToast(notifyState[b.id] ? 'Notification set for ' + b.name : 'Notification turned off');
+  function openDetail(buildingId) {
+    const b = buildings.find(x => x.id === buildingId);
+    if (!b) return;
+    openBuildingId = b.id;
+    composeTag = null;
+    detailModal.innerHTML = detailHTML(b);
+    modalOverlay.classList.add('show');
+    requestAnimationFrame(() => requestAnimationFrame(() => detailModal.classList.add('show')));
+
+    detailModal.querySelector('#detail-close-btn').addEventListener('click', closeDetail);
+
+    // Favorite
+    const favBtn = detailModal.querySelector('#detail-fav-btn');
+    favBtn.addEventListener('click', () => {
+      if (state.favorites.has(b.id)) {
+        state.favorites.delete(b.id);
+        favBtn.classList.remove('faved');
+        showToast('Removed from Saved');
+      } else {
+        state.favorites.add(b.id);
+        favBtn.classList.add('faved');
+        showToast(b.name + ' added to Saved');
+      }
+      updateSavedBadge();
+      renderList();
+      renderSearch(searchInput.value);
+    });
+
+    // Notify toggle
+    const tog = detailModal.querySelector('#notify-toggle');
+    tog.addEventListener('click', () => {
+      state.notify[b.id] = !state.notify[b.id];
+      state.notified[b.id] = false;
+      tog.classList.toggle('on', state.notify[b.id]);
+      tog.setAttribute('aria-checked', String(!!state.notify[b.id]));
+      showToast(state.notify[b.id] ? 'Notification set for ' + b.name : 'Notification turned off');
+    });
+
+    // Report composer
+    const chips = detailModal.querySelectorAll('.report-chip');
+    const sendBtn = detailModal.querySelector('#report-send');
+    const input = detailModal.querySelector('#report-input');
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        composeTag = chip.dataset.tag === composeTag ? null : chip.dataset.tag;
+        chips.forEach(c => c.classList.toggle('selected', c.dataset.tag === composeTag));
+        sendBtn.disabled = !composeTag;
       });
-      detailModal.querySelectorAll('.alt-card').forEach(el => {
-        el.addEventListener('click', () => {
-          closeDetail();
-          setTimeout(() => openDetail(el.dataset.id), 340);
-        });
-      });
-    }
-    function closeDetail() {
-      detailModal.classList.remove('show');
-      modalOverlay.classList.remove('show');
-      setTimeout(() => { detailModal.innerHTML = ''; }, 340);
-    }
-    modalOverlay.addEventListener('click', closeDetail);
+    });
+    sendBtn.addEventListener('click', () => {
+      if (!composeTag) return;
+      const arr = state.reports[b.id] = state.reports[b.id] || [];
+      arr.unshift({ u: 'SW', tag: composeTag, text: input.value.trim(), min: 0 });
+      if (arr.length > 5) arr.pop();
+      state.reportsPosted++;
+      detailModal.querySelector('#reports-feed').innerHTML = reportsHTML(b);
+      input.value = '';
+      composeTag = null;
+      chips.forEach(c => c.classList.remove('selected'));
+      sendBtn.disabled = true;
+      showToast('Report posted \u2014 thanks for the buzz!');
+    });
 
-    // ========== TOAST ==========
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      document.getElementById('toast-text').textContent = msg;
-      t.classList.add('show');
-      clearTimeout(showToast._timer);
-      showToast._timer = setTimeout(() => t.classList.remove('show'), 2200);
+    // Alternatives
+    detailModal.querySelectorAll('.alt-card').forEach(el => {
+      el.addEventListener('click', () => {
+        closeDetail();
+        setTimeout(() => openDetail(el.dataset.id), 340);
+      });
+    });
+  }
+  function closeDetail() {
+    openBuildingId = null;
+    detailModal.classList.remove('show');
+    modalOverlay.classList.remove('show');
+    setTimeout(() => { detailModal.innerHTML = ''; }, 340);
+  }
+  modalOverlay.addEventListener('click', closeDetail);
+
+  // ========== TOAST & ALERT BANNER ==========
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-text').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+  const alertBanner = document.getElementById('alert-banner');
+  let bannerBuildingId = null;
+  function showAlertBanner(b) {
+    bannerBuildingId = b.id;
+    document.getElementById('alert-banner-title').textContent = b.name + ' just opened up';
+    document.getElementById('alert-banner-text').textContent = 'Now ' + b.percentFull + '% full \u00B7 ' + walkMinutes(b) + ' min walk \u00B7 tap to view';
+    alertBanner.classList.add('show');
+    clearTimeout(showAlertBanner._timer);
+    showAlertBanner._timer = setTimeout(() => alertBanner.classList.remove('show'), 6000);
+  }
+  alertBanner.addEventListener('click', () => {
+    alertBanner.classList.remove('show');
+    if (bannerBuildingId) openDetail(bannerBuildingId);
+  });
+
+  // ========== LIVE SIMULATION ENGINE ==========
+  // Each tick, every building drifts toward its time-of-day target
+  // with a little noise — pins, lists, and any open detail update in place.
+  function simTick() {
+    const nh = nowHour();
+    buildings.forEach(b => {
+      const target = hourlyPattern(b)[nh];
+      const pull = (target - b.percentFull) * 0.12;
+      const noise = (Math.random() - 0.5) * 4;
+      let next = Math.round(b.percentFull + pull + noise);
+      next = Math.max(2, Math.min(99, next));
+      b.prevPercent = b.percentFull;
+      b.percentFull = next;
+
+      // fire alert if armed & crossed below 50
+      if (state.notify[b.id] && !state.notified[b.id] && b.percentFull < 50) {
+        state.notified[b.id] = true;
+        showAlertBanner(b);
+      }
+      refreshPin(b);
+    });
+
+    // age crowdsourced reports
+    Object.values(state.reports).forEach(arr => arr.forEach(rp => rp.min += 0.12));
+
+    renderList();
+    if (document.querySelector('.view[data-view="search"]').classList.contains('active')) renderSearch(searchInput.value);
+    if (document.querySelector('.view[data-view="saved"]').classList.contains('active')) renderSaved();
+
+    // update open detail in place (numbers only, no re-render flicker)
+    if (openBuildingId) {
+      const b = buildings.find(x => x.id === openBuildingId);
+      const pct = document.getElementById('detail-pct');
+      if (b && pct) {
+        const color = crowdColor(b.percentFull);
+        pct.textContent = b.percentFull + '%';
+        pct.style.color = color;
+        const lbl = document.getElementById('detail-pct-label');
+        lbl.textContent = crowdLabel(b.percentFull);
+        lbl.style.color = color;
+        const bar = document.getElementById('detail-bar');
+        bar.style.width = b.percentFull + '%';
+        bar.style.background = color;
+        const cnt = document.getElementById('detail-count');
+        if (cnt) cnt.textContent = Math.round(b.capacity * b.percentFull / 100).toLocaleString();
+      }
     }
+  }
+  setInterval(simTick, 7000);
+
+  // First render of dynamic views so they're ready before first visit
+  renderSaved();
+  renderProfile();
   </script>
 </body>
 </html>
